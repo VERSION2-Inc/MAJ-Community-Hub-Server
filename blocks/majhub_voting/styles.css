@@ -1,0 +1,16 @@
+/**
+ *  MAJ Hub Voting block
+ *  
+ *  @author  VERSION2, Inc. (http://ver2.jp)
+ *  @version $Id: styles.css 126 2012-11-26 11:19:24Z malu $
+ */
+.block_majhub_vote .content .title { text-align:center; }
+.block_majhub_vote .content .period { text-align:center; margin:0.5em 0; font-size:85%; font-style:italic; }
+.block_majhub_vote .content .vote { text-align:center; font-weight:bold; }
+.block_majhub_vote .content .vote input { padding:2px 5px; margin:0.5em; }
+.block_majhub_vote .content .comingsoon { text-align:center; font-weight:bold; }
+.block_majhub_vote .content .voted { font-size:85%; }
+.block_majhub_vote .content .thanks { text-align:center; }
+.block_majhub_vote .content .result { text-align:center; margin:0.5em 0; }
+.block_majhub_vote .content .result .votes { font-weight:bold }
+.block_majhub_vote .content img.smallicon { margin:-1px 2px -4px 0; }

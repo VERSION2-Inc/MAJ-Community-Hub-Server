@@ -1,0 +1,7 @@
+/**
+ *  MAJ Hub Voting block
+ *  
+ *  @author  VERSION2, Inc. (http://ver2.jp)
+ *  @version $Id: competitions.css 133 2012-11-28 01:44:06Z malu $
+ */
+.region-content table tr.editing td { border:1px dashed red; }

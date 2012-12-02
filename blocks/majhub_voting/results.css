@@ -1,0 +1,19 @@
+/**
+ *  MAJ Hub Voting block
+ *  
+ *  @author  VERSION2, Inc. (http://ver2.jp)
+ *  @version $Id: results.css 126 2012-11-26 11:19:24Z malu $
+ */
+fieldset.competition { border:1px solid gray; }
+fieldset.competition legend { margin:0 0.5em; padding:0 0.5em; font-weight:bold; }
+fieldset.competition dl dt { height:1em; width:7em; text-align:right; font-weight:bold; }
+fieldset.competition dl dd { height:1em; margin:-1em 0 1em 8em; text-align:left; }
+
+table.competition tr { color: black; }
+table.competition tr.odd { background-color: white; }
+table.competition tr.even { background-color: ghostwhite; }
+table.competition tr th { border:1px solid gray; background-color:aliceblue; }
+table.competition tr td { border:1px solid gray; }
+table.competition tr td span { margin-right:0.5em; }
+table.competition tr td.rank { text-align:right; }
+table.competition tr td.count { text-align:right; font-weight:bold; }
