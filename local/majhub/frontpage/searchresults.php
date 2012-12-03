@@ -1,4 +1,4 @@
-<?php // $Id: searchresults.php 149 2012-12-01 09:43:18Z malu $
+<?php // $Id: searchresults.php 154 2012-12-03 03:11:43Z malu $
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -118,6 +118,37 @@ if (optional_param('search', null, PARAM_TEXT)) {
                  . ' text-align:center; border:1px solid silver; border-radius:5px; box-shadow:1px 1px 2px silver;';
     $infostyle = 'float:left; margin:0.5em; width:8em; height:24px; line-height:24px; text-align:center;';
 
+    $pager = '';
+    if (count($coursewares) < $coursewares_count) {
+        $queryurl = new moodle_url('/#searchresults');
+        $addparam = function ($name, $value) use (&$addparam, $queryurl)
+        {
+            if (!is_array($value))
+                $queryurl->param($name, $value);
+            else foreach ($value as $k => $v)
+                $addparam("{$name}[$k]", $v);
+        };
+        foreach ($_REQUEST as $name => $value)
+            $addparam($name, $value);
+        $prevpage = $offset - $limit >= 0
+                  ? html_writer::link(new moodle_url($queryurl, array('offset' => $offset - $limit)), $OUTPUT->larrow())
+                  : $OUTPUT->larrow();
+        $nextpage = $offset + $limit < $coursewares_count
+                  ? html_writer::link(new moodle_url($queryurl, array('offset' => $offset + $limit)), $OUTPUT->rarrow())
+                  : $OUTPUT->rarrow();
+        $pagestyle = 'margin:0 0.5em;';
+        $pager .= html_writer::tag('span', $prevpage, array('style' => $pagestyle));
+        for ($i = 0; $i < $coursewares_count; $i += $limit) {
+            $page = 1 + $i / $limit;
+            if ($i != $offset) {
+                $page = html_writer::link(new moodle_url($queryurl, array('offset' => $i)), $page);
+            }
+            $pager .= html_writer::tag('span', $page, array('style' => $pagestyle));
+        }
+        $pager .= html_writer::tag('span', $nextpage, array('style' => $pagestyle));
+    }
+
+    echo html_writer::tag('div', $pager, array('style' => 'text-align:center; margin:0 1em 0.5em 1em;'));
     echo html_writer::start_tag('ul', array('class' => 'topics'));
     if (empty($coursewares)) {
         echo html_writer::start_tag('li', array('class' => 'section main clearfix'));
@@ -167,10 +198,7 @@ if (optional_param('search', null, PARAM_TEXT)) {
         echo html_writer::end_tag('li');
     }
     echo html_writer::end_tag('ul');
-
-    if ($offset + count($coursewares) < $coursewares_count) {
-        // TODO: pager
-    }
+    echo html_writer::tag('div', $pager, array('style' => 'text-align:center; margin:0.5em 1em 0 1em;'));
 }
 
 echo html_writer::end_tag('div');

@@ -1,4 +1,4 @@
-<?php // $Id: local_majhub.php 142 2012-11-30 06:36:21Z malu $
+<?php // $Id: local_majhub.php 159 2012-12-03 06:18:27Z malu $
 
 $string['pluginname'] = 'MAJ Community Hub';
 
@@ -11,6 +11,7 @@ $string['mostreviewed'] = 'Most Reviewed';
 $string['toprated'] = 'Top Rated';
 $string['latest'] = 'Latest';
 
+$string['optionalfields'] = 'Optional fields';
 $string['keywords'] = 'Any Keywords';
 $string['title'] = 'Title';
 $string['contributor'] = 'Contributor';

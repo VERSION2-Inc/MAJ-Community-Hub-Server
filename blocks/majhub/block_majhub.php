@@ -6,7 +6,7 @@ require_once __DIR__.'/../../local/majhub/classes/courseware.php';
  *  MAJ Hub block
  *  
  *  @author  VERSION2, Inc. (http://ver2.jp)
- *  @version $Id: block_majhub.php 144 2012-12-01 07:59:18Z malu $
+ *  @version $Id: block_majhub.php 160 2012-12-03 06:22:35Z malu $
  */
 class block_majhub extends block_base
 {
@@ -117,6 +117,11 @@ class block_majhub extends block_base
             $html .= html_writer::start_tag('form', array('action' => $this->page->url, 'method' => 'post'));
             $html .= self::render_input('id', $this->page->url->param('id'), 'hidden');
         }
+        $html .= html_writer::tag('div',
+            $OUTPUT->pix_icon('t/collapsed', '', '', array('class' => 'collapsed')) .
+            $OUTPUT->pix_icon('t/expanded', '', '', array('class' => 'expanded')),
+            array('style' => 'display:none;')
+            );
         $html .= html_writer::start_tag('table', array('class' => 'metadata'));
         foreach ($fixedrows as $name => $value) {
             $html .= self::render_row($name, $value);
@@ -126,7 +131,8 @@ class block_majhub extends block_base
             );
         foreach ($courseware->metadata as $metadatum) {
             $html .= self::render_row($metadatum->name,
-                $editing ? $metadatum->render_form_element('metadata', '<br />') : $metadatum->render(', ')
+                $editing ? $metadatum->render_form_element('metadata', '<br />') : $metadatum->render(', '),
+                $metadatum->optional ? array('class' => 'optional') : null
                 );
         }
         if ($editing) {
@@ -194,6 +200,7 @@ class block_majhub extends block_base
         $html .= html_writer::end_tag('div');
 
         $this->page->requires->js_init_call('M.block_majhub.init');
+        $this->page->requires->string_for_js('optionalfields', 'local_majhub');
 
         return $this->content = (object)array('text' => $html);
     }
@@ -203,12 +210,14 @@ class block_majhub extends block_base
      *  
      *  @param string $name
      *  @param string $value
+     *  @param array $attributes
      *  @return string
      */
-    private static function render_row($name, $value)
+    private static function render_row($name, $value, array $attributes = null)
     {
         return html_writer::tag('tr',
-            html_writer::tag('th', $name) . html_writer::tag('td', $value)
+            html_writer::tag('th', $name) . html_writer::tag('td', $value),
+            $attributes
             );
     }
 

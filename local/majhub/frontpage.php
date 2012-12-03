@@ -1,4 +1,4 @@
-<?php // $Id: frontpage.php 142 2012-11-30 06:36:21Z malu $
+<?php // $Id: frontpage.php 155 2012-12-03 03:43:48Z malu $
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -23,6 +23,7 @@ if (optional_param('search', null, PARAM_TEXT)) {
 }
 foreach ($sectionnames as $sectionname) {
     echo html_writer::start_tag('div', array('class' => 'mform'));
+    echo html_writer::tag('a', '', array('name' => $sectionname));
     echo html_writer::start_tag('fieldset', array('class' => 'clearfix'));
     echo html_writer::tag('legend', get_string($sectionname, 'local_majhub'));
     {
@@ -32,10 +33,10 @@ foreach ($sectionnames as $sectionname) {
     echo html_writer::end_tag('div');
 }
 
-#$PAGE->requires->string_for_js('showoptionalcriteria', 'local_majhub');
-#$PAGE->requires->string_for_js('hideoptionalcriteria', 'local_majhub');
-#$PAGE->requires->js('/local/majhub/frontpage.js');
-#$PAGE->requires->js_init_call('M.local_majhub.frontpage.init');
+$PAGE->requires->string_for_js('showoptionalcriteria', 'local_majhub');
+$PAGE->requires->string_for_js('hideoptionalcriteria', 'local_majhub');
+$PAGE->requires->js('/local/majhub/frontpage.js');
+$PAGE->requires->js_init_call('M.local_majhub.frontpage.init');
 
 // Include course AJAX
 if (include_course_ajax($SITE, $modnamesused)) {
