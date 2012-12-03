@@ -3,7 +3,7 @@
  *  MAJ Hub Voting
  *  
  *  @author  VERSION2, Inc. (http://ver2.jp)
- *  @version $Id: competition.php 148 2012-12-01 08:37:33Z malu $
+ *  @version $Id: competition.php 161 2012-12-03 07:03:22Z malu $
  */
 namespace majhub\voting;
 
@@ -158,6 +158,10 @@ class competition
     public function save()
     {
         global $DB;
+
+        // lazy extension installation; workaround for the database dependency
+        require_once __DIR__.'/extension.php';
+        \majhub\extension::install('block_majhub_voting');
 
         $this->validate();
         $record = new \stdClass;

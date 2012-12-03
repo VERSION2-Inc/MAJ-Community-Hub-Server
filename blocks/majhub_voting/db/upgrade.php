@@ -1,4 +1,4 @@
-<?php // $Id: upgrade.php 148 2012-12-01 08:37:33Z malu $
+<?php // $Id: upgrade.php 161 2012-12-03 07:03:22Z malu $
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -14,10 +14,8 @@ function xmldb_block_majhub_voting_upgrade($oldversion = 0)
 
     $dbman = $DB->get_manager();
 
-    if ($oldversion < 2012120100) {
-        require_once __DIR__.'/install.php';
-        xmldb_block_majhub_voting_install();
-    }
+//  if ($oldversion < 2012120100) {
+//  }
 
     return true;
 }
