@@ -2,5 +2,6 @@
 MAJ Community Hub Installation
 ==============================
 
-$CFG->customfrontpageinclude = __DIR__.'/local/majhub/frontpage.php';
+The following additional configuration is required in your <moodle>/config.php
 
+  $CFG->customfrontpageinclude = __DIR__.'/local/majhub/frontpage.php';
