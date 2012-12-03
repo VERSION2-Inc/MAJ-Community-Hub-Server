@@ -3,7 +3,7 @@
  *  MAJ Hub
  *  
  *  @author  VERSION2, Inc. (http://ver2.jp)
- *  @version $Id: metafield.php 116 2012-11-24 09:20:41Z malu $
+ *  @version $Id: metafield.php 163 2012-12-03 07:33:39Z malu $
  */
 namespace majhub;
 
@@ -238,10 +238,13 @@ class metafield
     {
         global $DB;
 
-        $metafields = array();
-        $records = $DB->get_records(self::TABLE, null, 'optional ASC, weight ASC, name ASC');
-        foreach ($records as $record) {
-            $metafields[$record->id] = self::from_record($record);
+        static $metafields = null;
+        if ($metafields === null) {
+            $metafields = array();
+            $records = $DB->get_records(self::TABLE, null, 'optional ASC, weight ASC, name ASC');
+            foreach ($records as $record) {
+                $metafields[$record->id] = self::from_record($record);
+            }
         }
         return $metafields;
     }

@@ -6,7 +6,7 @@ require_once __DIR__.'/../../local/majhub/classes/courseware.php';
  *  MAJ Hub block
  *  
  *  @author  VERSION2, Inc. (http://ver2.jp)
- *  @version $Id: block_majhub.php 160 2012-12-03 06:22:35Z malu $
+ *  @version $Id: block_majhub.php 164 2012-12-03 08:31:16Z malu $
  */
 class block_majhub extends block_base
 {
@@ -114,14 +114,11 @@ class block_majhub extends block_base
                 );
         }
         if ($editing) {
-            $html .= html_writer::start_tag('form', array('action' => $this->page->url, 'method' => 'post'));
+            $html .= html_writer::start_tag('form',
+                array('action' => $this->page->url, 'method' => 'post', 'class' => 'mform')
+                );
             $html .= self::render_input('id', $this->page->url->param('id'), 'hidden');
         }
-        $html .= html_writer::tag('div',
-            $OUTPUT->pix_icon('t/collapsed', '', '', array('class' => 'collapsed')) .
-            $OUTPUT->pix_icon('t/expanded', '', '', array('class' => 'expanded')),
-            array('style' => 'display:none;')
-            );
         $html .= html_writer::start_tag('table', array('class' => 'metadata'));
         foreach ($fixedrows as $name => $value) {
             $html .= self::render_row($name, $value);
@@ -130,17 +127,21 @@ class block_majhub extends block_base
             $editing ? self::render_input('demourl', $courseware->demourl) : self::render_url($courseware->demourl)
             );
         foreach ($courseware->metadata as $metadatum) {
-            $html .= self::render_row($metadatum->name,
-                $editing ? $metadatum->render_form_element('metadata', '<br />') : $metadatum->render(', '),
-                $metadatum->optional ? array('class' => 'optional') : null
-                );
+            $name = $metadatum->name;
+            $attr = null;
+            if ($editing && $metadatum->required) {
+                $attr = array('class' => 'required');
+                $name = $name . $OUTPUT->pix_icon('req', get_string('required'), '', array('class' => 'req'));
+            } elseif ($metadatum->optional) {
+                $attr = array('class' => 'optional');
+            }
+            $value = $editing ? $metadatum->render_form_element('metadata', '<br />') : $metadatum->render(', ');
+            $html .= self::render_row($name, $value, $attr);
         }
         if ($editing) {
             $html .= self::render_row('', self::render_input('updatemetadata', get_string('update'), 'submit'));
         }
-        $html .= self::render_row(get_string('rating', 'local_majhub'),
-            self::render_rating($courseware->rating)
-            );
+        $html .= self::render_row(get_string('rating', 'local_majhub'), self::render_rating($courseware->rating));
         $html .= html_writer::end_tag('table');
         if ($editing) {
             $html .= html_writer::end_tag('form');
@@ -198,6 +199,13 @@ class block_majhub extends block_base
             $html .= html_writer::end_tag('div');
         }
         $html .= html_writer::end_tag('div');
+
+        // hidden icons
+        $html .= html_writer::tag('div',
+            $OUTPUT->pix_icon('t/collapsed', '', '', array('class' => 'collapsed')) .
+            $OUTPUT->pix_icon('t/expanded', '', '', array('class' => 'expanded')),
+            array('style' => 'display:none;')
+            );
 
         $this->page->requires->js_init_call('M.block_majhub.init');
         $this->page->requires->string_for_js('optionalfields', 'local_majhub');
