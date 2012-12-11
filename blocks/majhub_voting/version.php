@@ -1,4 +1,4 @@
-<?php // $Id: version.php 148 2012-12-01 08:37:33Z malu $
+<?php // $Id: version.php 169 2012-12-10 10:02:28Z malu $
 
 defined('MOODLE_INTERNAL') || die;
 

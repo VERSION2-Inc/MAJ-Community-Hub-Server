@@ -2,7 +2,7 @@
  *  MAJ Hub block
  *  
  *  @author  VERSION2, Inc. (http://ver2.jp)
- *  @version $Id: module.js 164 2012-12-03 08:31:16Z malu $
+ *  @version $Id: module.js 166 2012-12-05 05:54:33Z malu $
  */
 YUI.add('block_majhub', function (Y)
 {
@@ -47,9 +47,9 @@ YUI.add('block_majhub', function (Y)
             if (!$first)
                 return;
 
-            var src = {
-                'collapsed': $block.one('img.collapsed').get('src'),
-                'expanded' : $block.one('img.expanded').get('src')
+            var pix = {
+                'collapsed': M.util.image_url('t/collapsed'),
+                'expanded' : M.util.image_url('t/expanded')
             };
             var $fields = $metadata.all('.optional');
             var $button = Y.Node.create('<tr class="toggle"/>').append(
@@ -60,16 +60,16 @@ YUI.add('block_majhub', function (Y)
             function show()
             {
                 $fields.show();
-                $button.one('img').set('src', src['expanded']);
+                $button.one('img').set('src', pix['expanded']);
             }
             function hide()
             {
                 $fields.hide();
-                $button.one('img').set('src', src['collapsed']);
+                $button.one('img').set('src', pix['collapsed']);
             }
             $button.on('click', function ()
             {
-                if (this.one('img').get('src') == src['collapsed'])
+                if (this.one('img').get('src') == pix['collapsed'])
                     show();
                 else
                     hide();

@@ -1,4 +1,4 @@
-<?php // $Id: lib.php 85 2012-11-21 03:23:22Z malu $
+<?php // $Id: lib.php 172 2012-12-11 08:58:26Z malu $
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -17,16 +17,25 @@ function local_majhub_cron()
     $role = $DB->get_record('role', array('archetype' => 'teacher'), '*', IGNORE_MULTIPLE);
     $enroller = enrol_get_plugin('manual');
 
-    $coursewares = $DB->get_records_select('majhub_coursewares',
-        'fileid IS NOT NULL AND courseid IS NULL', null, 'timeuploaded ASC');
+    // gets all uploaded, not restored and not restoring coursewares
+    $coursewares = $DB->get_records_select(majhub\courseware::TABLE,
+        'fileid IS NOT NULL AND courseid IS NULL AND timemodified = timeuploaded',
+        null, 'timeuploaded ASC');
     foreach ($coursewares as $courseware) try {
+        // double check to prevent from being duplicated
+        $courseware = majhub\courseware::from_id($courseware->id, MUST_EXIST);
+        if (!empty($courseware->courseid) || $courseware->timemodified != $courseware->timeuploaded)
+            continue;
+        // marks as restoring
+        $DB->set_field(majhub\courseware::TABLE, 'timemodified', time(), array('id' => $courseware->id));
+
         // restores the uploaded course backup file as a new course
-        $courseid = majhub\restore($courseware->id);
-        $course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
+        $courseware->courseid = majhub\restore($courseware->id);
+        $course = $DB->get_record('course', array('id' => $courseware->courseid), '*', MUST_EXIST);
 
         // renames the course fullname and shortname with the courseware unique id
-        $course->fullname  = majhub\courseware::generate_unique_name($courseware->id, $courseware->fullname);
-        $course->shortname = majhub\courseware::generate_unique_name($courseware->id, $courseware->shortname);
+        $course->fullname  = $courseware->unique_fullname;
+        $course->shortname = $courseware->unique_shortname;
         $DB->update_record('course', $course);
 
         // adds a MAJ Hub block to the new course
@@ -64,16 +73,16 @@ function local_majhub_user_created_handler($user)
 {
     global $DB;
 
+    require_once __DIR__.'/classes/courseware.php';
+
     $role = $DB->get_record('role', array('archetype' => 'teacher'), '*', IGNORE_MULTIPLE);
     $enroller = enrol_get_plugin('manual');
 
     // enrols the new user to all the coursewares as a non-editing teacher
-    $coursewares = $DB->get_records_select('majhub_coursewares',
-        'fileid IS NOT NULL AND courseid IS NOT NULL');
+    $coursewares = $DB->get_records_select(majhub\courseware::TABLE, 'fileid IS NOT NULL AND courseid IS NOT NULL');
     foreach ($coursewares as $courseware) try {
         $instance = $DB->get_record('enrol',
-            array('enrol' => $enroller->get_name(), 'courseid' => $courseware->courseid),
-            '*', MUST_EXIST);
+            array('enrol' => $enroller->get_name(), 'courseid' => $courseware->courseid), '*', MUST_EXIST);
         $enroller->enrol_user($instance, $user->id, $role->id);
     } catch (Exception $ex) {
         error_log($ex->__toString());

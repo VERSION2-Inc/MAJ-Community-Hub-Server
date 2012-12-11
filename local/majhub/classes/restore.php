@@ -3,7 +3,7 @@
  *  MAJ Hub
  *  
  *  @author  VERSION2, Inc. (http://ver2.jp)
- *  @version $Id: restore.php 104 2012-11-23 04:59:04Z malu $
+ *  @version $Id: restore.php 172 2012-12-11 08:58:26Z malu $
  */
 namespace majhub;
 
@@ -74,6 +74,7 @@ function restore($coursewareid)
     // updates the courseware record
     $courseware->courseid = $courseid;
     $courseware->timerestored = time();
+    $courseware->timemodified = $courseware->timerestored;
     $DB->update_record('majhub_coursewares', $courseware);
 
     return $courseid;

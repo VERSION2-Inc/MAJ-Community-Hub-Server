@@ -6,7 +6,7 @@ require_once __DIR__.'/../../local/majhub/classes/courseware.php';
  *  MAJ Hub block
  *  
  *  @author  VERSION2, Inc. (http://ver2.jp)
- *  @version $Id: block_majhub.php 164 2012-12-03 08:31:16Z malu $
+ *  @version $Id: block_majhub.php 166 2012-12-05 05:54:33Z malu $
  */
 class block_majhub extends block_base
 {
@@ -199,13 +199,6 @@ class block_majhub extends block_base
             $html .= html_writer::end_tag('div');
         }
         $html .= html_writer::end_tag('div');
-
-        // hidden icons
-        $html .= html_writer::tag('div',
-            $OUTPUT->pix_icon('t/collapsed', '', '', array('class' => 'collapsed')) .
-            $OUTPUT->pix_icon('t/expanded', '', '', array('class' => 'expanded')),
-            array('style' => 'display:none;')
-            );
 
         $this->page->requires->js_init_call('M.block_majhub.init');
         $this->page->requires->string_for_js('optionalfields', 'local_majhub');

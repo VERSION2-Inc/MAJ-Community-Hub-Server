@@ -1,4 +1,4 @@
-<?php // $Id: create.php 51 2012-11-13 03:36:55Z malu $
+<?php // $Id: create.php 172 2012-12-11 08:58:26Z malu $
 
 require_once __DIR__.'/../../../config.php';
 
@@ -9,15 +9,14 @@ try {
     $shortname = required_param('shortname', PARAM_TEXT);
     $filesize  = required_param('filesize', PARAM_INT); // TODO: how do we handle large file >2GiB?
 
-    $courseware = (object)array(
-        'userid' => $USER->id,
-        'fullname' => $fullname,
-        'shortname' => $shortname,
-        'filesize' => $filesize,
-        'version' => '1.0',
-        'timecreated' => time(),
-        'timemodified' => time(),
-        );
+    $courseware = new stdClass;
+    $courseware->userid       = $USER->id;
+    $courseware->fullname     = $fullname;
+    $courseware->shortname    = $shortname;
+    $courseware->filesize     = $filesize;
+    $courseware->version      = '1.0';
+    $courseware->timecreated  = time();
+    $courseware->timemodified = $courseware->timecreated;
     $courseware->id = $DB->insert_record('majhub_coursewares', $courseware);
 
     $doc = new DOMDocument('1.0', 'UTF-8');
