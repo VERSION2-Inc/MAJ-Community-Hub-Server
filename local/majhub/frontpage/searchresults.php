@@ -1,4 +1,4 @@
-<?php // $Id: searchresults.php 154 2012-12-03 03:11:43Z malu $
+<?php // $Id: searchresults.php 173 2013-01-11 07:21:47Z malu $
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -17,7 +17,7 @@ if (false) {
 
 echo html_writer::start_tag('div', array('class' => 'course-content path-course-view'));
 
-if (optional_param('search', null, PARAM_TEXT)) {
+if (/*optional_param('search', null, PARAM_TEXT)*/ true) {
     $keywords    = preg_split('/\s+/', optional_param('keywords', '', PARAM_TEXT), -1, PREG_SPLIT_NO_EMPTY);
     $title       = optional_param('title', '', PARAM_TEXT);
     $contributor = optional_param('contributor', '', PARAM_TEXT);

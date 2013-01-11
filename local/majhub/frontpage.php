@@ -1,4 +1,4 @@
-<?php // $Id: frontpage.php 155 2012-12-03 03:43:48Z malu $
+<?php // $Id: frontpage.php 173 2013-01-11 07:21:47Z malu $
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -18,7 +18,7 @@ $CFG->frontpageloggedin = $CFG->frontpage = '';
 //$PAGE->requires->css('/local/majhub/frontpage.css');
 
 $sectionnames = array('leaderboard', 'searchcriteria');
-if (optional_param('search', null, PARAM_TEXT)) {
+if (/*optional_param('search', null, PARAM_TEXT)*/ true) {
     $sectionnames[] = 'searchresults';
 }
 foreach ($sectionnames as $sectionname) {
