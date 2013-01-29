@@ -1,6 +1,10 @@
-<?php // $Id: frontpage.php 173 2013-01-11 07:21:47Z malu $
+<?php // $Id: frontpage.php 176 2013-01-24 12:11:41Z malu $
 
 defined('MOODLE_INTERNAL') || die;
+
+require_once __DIR__.'/classes/setting.php';
+
+use majhub\setting;
 
 if (false) {
     $CFG  = new stdClass;
@@ -18,7 +22,7 @@ $CFG->frontpageloggedin = $CFG->frontpage = '';
 //$PAGE->requires->css('/local/majhub/frontpage.css');
 
 $sectionnames = array('leaderboard', 'searchcriteria');
-if (/*optional_param('search', null, PARAM_TEXT)*/ true) {
+if (setting::get('coursewaresperpagedefault', 10) > 0) {
     $sectionnames[] = 'searchresults';
 }
 foreach ($sectionnames as $sectionname) {

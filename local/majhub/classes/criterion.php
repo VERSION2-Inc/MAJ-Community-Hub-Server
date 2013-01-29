@@ -3,7 +3,7 @@
  *  MAJ Hub
  *  
  *  @author  VERSION2, Inc. (http://ver2.jp)
- *  @version $Id: criterion.php 104 2012-11-23 04:59:04Z malu $
+ *  @version $Id: criterion.php 176 2013-01-24 12:11:41Z malu $
  */
 namespace majhub;
 
@@ -13,9 +13,9 @@ namespace majhub;
 class criterion
 {
     /** @var string */
-    public $select;
+    public $expression;
     /** @var string[] */
-    public $params;
+    public $parameters;
 
     /**
      *  Joins criteria
@@ -28,15 +28,15 @@ class criterion
     {
         if (empty($criteria))
             return self::everything();
-        $selects = array();
-        $params  = array();
+        $expressions = array();
+        $parameters  = array();
         foreach ($criteria as $criterion) {
-            $selects[] = $criterion->select;
-            $params = array_merge($params, $criterion->params);
+            $expressions[] = $criterion->expression;
+            $parameters = array_merge($parameters, $criterion->parameters);
         }
         $criterion = new criterion;
-        $criterion->select = '(' . implode(" $andor ", $selects) . ')';
-        $criterion->params = $params;
+        $criterion->expression = '(' . implode(" $andor ", $expressions) . ')';
+        $criterion->parameters = $parameters;
         return $criterion;
     }
 
@@ -53,8 +53,8 @@ class criterion
         global $DB;
 
         $criterion = new criterion;
-        $criterion->select = $DB->sql_like($fieldname, '?', false);
-        $criterion->params = array('%' . $DB->sql_like_escape($formvalue) . '%');
+        $criterion->expression = $DB->sql_like($fieldname, '?', false);
+        $criterion->parameters = array('%' . $DB->sql_like_escape($formvalue) . '%');
         return $criterion;
     }
 
@@ -71,8 +71,8 @@ class criterion
         global $DB;
 
         $criterion = new criterion;
-        $criterion->select = $DB->sql_like($fieldname, '?', false);
-        $criterion->params = array($DB->sql_like_escape($formvalue));
+        $criterion->expression = $DB->sql_like($fieldname, '?', false);
+        $criterion->parameters = array($DB->sql_like_escape($formvalue));
         return $criterion;
     }
 
@@ -99,8 +99,8 @@ class criterion
     public static function everything()
     {
         $criterion = new criterion;
-        $criterion->select = '1 = 1';
-        $criterion->params = array();
+        $criterion->expression = '1 = 1';
+        $criterion->parameters = array();
         return $criterion;
     }
 
@@ -110,8 +110,8 @@ class criterion
     public static function nothing()
     {
         $criterion = new criterion;
-        $criterion->select = '1 = 0';
-        $criterion->params = array();
+        $criterion->expression = '1 = 0';
+        $criterion->parameters = array();
         return $criterion;
     }
 }

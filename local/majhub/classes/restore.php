@@ -3,7 +3,7 @@
  *  MAJ Hub
  *  
  *  @author  VERSION2, Inc. (http://ver2.jp)
- *  @version $Id: restore.php 172 2012-12-11 08:58:26Z malu $
+ *  @version $Id: restore.php 176 2013-01-24 12:11:41Z malu $
  */
 namespace majhub;
 
@@ -70,6 +70,8 @@ function restore($coursewareid)
     $rc->set_status(\backup::STATUS_AWAITING);
     $rc->execute_plan();
     $rc->destroy();
+
+    unset($scope);
 
     // updates the courseware record
     $courseware->courseid = $courseid;

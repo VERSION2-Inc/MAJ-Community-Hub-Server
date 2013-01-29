@@ -1,4 +1,4 @@
-<?php // $Id: local_majhub.php 159 2012-12-03 06:18:27Z malu $
+<?php // $Id: local_majhub.php 194 2013-01-29 03:11:14Z malu $
 
 $string['pluginname'] = 'MAJ Community Hub';
 
@@ -19,12 +19,19 @@ $string['uploadedat'] = 'アップロード日';
 $string['filesize'] = 'ファイルサイズ';
 $string['version'] = 'バージョン';
 $string['demourl'] = 'デモサイト';
-$string['rating'] = '評価';
-$string['review'] = 'レビュー';
 
 $string['preview'] = 'プレビュー';
 $string['download'] = 'ダウンロード';
 $string['demosite'] = 'デモサイト';
+
+$string['review'] = 'レビュー';
+$string['rating'] = '評価';
+$string['moderator'] = 'モデレーター';
+$string['overallrating'] = '平均評価';
+$string['latestreviews'] = 'レビュー {$a->total} 件中、最新 {$a->latest} 件';
+$string['youhavepoints'] = 'あなたの保有ポイント: {$a}';
+
+$string['give'] = '進呈';
 
 $string['sortby:newest'] = '新着順';
 $string['sortby:oldest'] = '登録順';
@@ -40,10 +47,27 @@ $string['hideoptionalcriteria'] = '拡張フィールドを隠す';
 $string['previewthiscourseware'] = 'このコースウェアをプレビュー';
 $string['downloadthiscourseware'] = 'このコースウェアをダウンロード';
 $string['visitauthorsdemosite'] = '作者のデモサイトを訪れる';
+$string['editcoursewaremetadata'] = 'コースウェアのメタデータを編集する';
 
 $string['noresult'] = '条件にマッチするコースウェアがありません';
 
+$string['settings/frontpage'] = 'フロントページ設定';
 $string['settings/metafields'] = 'メタフィールド定義';
+$string['settings/pointsystem'] = 'ポイントシステム設定';
+
+$string['coursewaresperpageoptions'] = '１ページあたりのコースウェア表示数の選択肢';
+$string['coursewaresperpagedefault'] = '１ページあたりのコースウェア表示数のデフォルト';
+
+$string['pointacquisitions'] = '獲得ポイント';
+$string['pointsforregistration'] = '新規登録ボーナスポイント';
+$string['pointsforuploading'] = 'アップロードポイント';
+$string['pointsforreviewing'] = 'レビューポイント';
+$string['pointsforquality'] = '高品質ボーナスポイント';
+$string['pointsforpopularity'] = '人気ボーナスポイント';
+$string['countforpopularity'] = '人気ボーナスポイントを獲得するダウンロード数';
+
+$string['pointconsumptions'] = '消費ポイント';
+$string['pointsfordownloading'] = 'ダウンロードコスト';
 
 $string['fieldtype'] = 'タイプ';
 $string['fieldtype:text'] = 'テキスト';
@@ -54,12 +78,17 @@ $string['attributes:required'] = '必須';
 $string['attributes:optional'] = '省略可';
 $string['options'] = 'オプション';
 
+$string['confirm:purchase'] = 'このコースウェアを {$a} ポイントで購入しますか？';
+
 $string['confirm:metafield:delete'] = '本当にこのメタフィールドを削除してもよろしいですか？';
 $string['confirm:metafield:delete:warning'] = '警告！！
 このメタフィールドに対して既にユーザーによって入力されたメタデータは完全に失います。
 それらはもしあなたが同じメタフィールド名で再定義したとしても回復しません。';
 
+$string['error:accessdenied'] = 'アクセスが拒否されました
+(Hub サーバー上に複数のアカウントを持っている場合は、Hub Client で設定したアカウントでログインし直してください。)';
 $string['error:missingcourseware'] = 'コースウェア #{$a} が見つかりません';
+$string['error:shortofpointsfordownloading'] = 'ポイントが不足しています';
 
 $string['error:metafield:emptyname'] = '名称は必須です';
 $stirng['error:metafield:emptyoptions'] = 'テキスト以外のタイプではオプションが必須です';

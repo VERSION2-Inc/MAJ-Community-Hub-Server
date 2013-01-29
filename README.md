@@ -1,7 +1,16 @@
 MAJ Community Hub Server
 ========================
 
-version 2.3, release 1 - 2013.01.11
+version 2.3, release 2 - 2013.01.29
+
+
+Change Log
+----------
+
+* 2.3, release 2
+  * New feature: Point System
+  * Improvement: Review
+  * Improvement: Metadata Form
 
 
 Requirements

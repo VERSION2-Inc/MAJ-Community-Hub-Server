@@ -1,10 +1,12 @@
-<?php // $Id: metafields.php 132 2012-11-28 01:34:12Z malu $
+<?php // $Id: metafields.php 176 2013-01-24 12:11:41Z malu $
 
 require_once __DIR__.'/../../../config.php';
 require_once __DIR__.'/../../../lib/adminlib.php';
 
 require_once __DIR__.'/../classes/metafield.php';
 require_once __DIR__.'/../classes/element.php';
+
+use majhub\metafield;
 
 function tag($tagName) { return new majhub\element($tagName); }
 
@@ -17,67 +19,66 @@ if (false) {
 $editid   = optional_param('edit', 0, PARAM_INT);
 $deleteid = optional_param('delete', 0, PARAM_INT);
 
-$baseurl = new moodle_url('/local/majhub/admin/metafields.php');
-$PAGE->set_url($baseurl);
+$PAGE->set_url(new moodle_url('/local/majhub/admin/metafields.php'));
 $PAGE->navbar->ignore_active(true);
 $PAGE->navbar->add(get_string('administrationsite'));
 $PAGE->navbar->add(get_string('pluginname', 'local_majhub'));
-$PAGE->navbar->add(get_string('settings/metafields', 'local_majhub'), $baseurl);
+$PAGE->navbar->add(get_string('settings/metafields', 'local_majhub'), $PAGE->url);
 
-admin_externalpage_setup('metafields');
+admin_externalpage_setup('majhub/metafields');
 
 if (optional_param('order', null, PARAM_TEXT)) {
     $weights = required_param_array('weights', PARAM_INT);
     foreach ($weights as $id => $weight) {
-        $DB->set_field(majhub\metafield::TABLE, 'weight', $weight, array('id' => $id));
+        $DB->set_field(metafield::TABLE, 'weight', $weight, array('id' => $id));
     }
-    majhub\metafield::reorder();
-    redirect($baseurl);
+    metafield::reorder();
+    redirect($PAGE->url);
 }
 if (optional_param('save', null, PARAM_TEXT) && confirm_sesskey()) {
     $field = (object)required_param_array('field', PARAM_RAW);
-    majhub\metafield::from_record($field)->save();
-    majhub\metafield::reorder();
-    redirect($baseurl);
+    metafield::from_record($field)->save();
+    metafield::reorder();
+    redirect($PAGE->url);
 }
 if (optional_param('suredelete', null, PARAM_TEXT) && confirm_sesskey()) {
-    majhub\metafield::from_id($deleteid, MUST_EXIST)->delete();
-    majhub\metafield::reorder();
-    redirect($baseurl);
+    metafield::from_id($deleteid, MUST_EXIST)->delete();
+    metafield::reorder();
+    redirect($PAGE->url);
 }
 
 $PAGE->requires->css('/local/majhub/admin/metafields.css');
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('settings/metafields', 'local_majhub'));
-echo html_writer::start_tag('form', array('action' => $baseurl, 'method' => 'post'));
+echo $form = tag('form')->action($PAGE->url)->method('post')->start();
 
 $addicon    = $OUTPUT->pix_icon('t/add', get_string('add'));
 $editicon   = $OUTPUT->pix_icon('t/edit', get_string('edit'));
 $deleteicon = $OUTPUT->pix_icon('t/delete', get_string('delete'));
 
 $sesskeyhidden = tag('input')->type('hidden')->name('sesskey')->value(sesskey());
-$cancelbutton  = tag('input')->type('button')->onclick("location.href = '$baseurl';")->value(get_string('cancel'));
+$cancelbutton  = tag('input')->type('button')->onclick("location.href = '{$PAGE->url}';")->value(get_string('cancel'));
 
 $maxweight = 0;
 
-echo html_writer::start_tag('table', array('class' => 'metafields'));
+echo $table = tag('table')->classes('metafields')->start();
 echo tag('tr')->append(
     tag('th')->classes('order')->append(get_string('order')),
     tag('th')->classes('name')->append(get_string('name')),
     tag('th')->classes('format')->append(get_string('format')),
     tag('th')->classes('actions')->append(get_string('actions'))
     );
-foreach (majhub\metafield::all() as $id => $field) {
+foreach (metafield::all() as $id => $field) {
     $maxweight = max($maxweight, $field->weight);
-    $rowattrs = array();
+    $tr = tag('tr');
     if ($id == $editid)
-        $rowattrs = array('class' => 'editing');
+        $tr->classes('editing');
     elseif ($field->required)
-        $rowattrs = array('class' => 'required');
+        $tr->classes('required');
     elseif ($field->optional)
-        $rowattrs = array('class' => 'optional');
-    echo html_writer::start_tag('tr', $rowattrs);
+        $tr->classes('optional');
+    echo $tr->start();
     if ($id == $editid) {
         echo tag('td')->classes('order')->append(
             tag('input')->type('hidden')->name('field[weight]')->value($field->weight), $field->weight
@@ -96,18 +97,18 @@ foreach (majhub\metafield::all() as $id => $field) {
             tag('fieldset')->append(
                 tag('legend')->append(get_string('fieldtype', 'local_majhub')),
                 tag('label')->append(
-                    tag('input')->type('radio')->name('field[type]')->value(majhub\metafield::TYPE_TEXT)
-                        ->checked($field->type == majhub\metafield::TYPE_TEXT),
+                    tag('input')->type('radio')->name('field[type]')->value(metafield::TYPE_TEXT)
+                        ->checked($field->type == metafield::TYPE_TEXT),
                     get_string('fieldtype:text', 'local_majhub')
                     ),
                 tag('label')->append(
-                    tag('input')->type('radio')->name('field[type]')->value(majhub\metafield::TYPE_RADIO)
-                        ->checked($field->type == majhub\metafield::TYPE_RADIO),
+                    tag('input')->type('radio')->name('field[type]')->value(metafield::TYPE_RADIO)
+                        ->checked($field->type == metafield::TYPE_RADIO),
                     get_string('fieldtype:radio', 'local_majhub')
                     ),
                 tag('label')->append(
-                    tag('input')->type('radio')->name('field[type]')->value(majhub\metafield::TYPE_CHECK)
-                        ->checked($field->type == majhub\metafield::TYPE_CHECK),
+                    tag('input')->type('radio')->name('field[type]')->value(metafield::TYPE_CHECK)
+                        ->checked($field->type == metafield::TYPE_CHECK),
                     get_string('fieldtype:check', 'local_majhub')
                     )
                 ),
@@ -146,15 +147,15 @@ foreach (majhub\metafield::all() as $id => $field) {
         } else {
             echo tag('td')->append($field->render());
             echo tag('td')->append(
-                tag('a')->href($baseurl . '?edit=' . $id)->append($editicon), ' ',
-                tag('a')->href($baseurl . '?delete=' . $id)->append($deleteicon)
+                tag('a')->href("{$PAGE->url}?edit={$id}")->append($editicon), ' ',
+                tag('a')->href("{$PAGE->url}?delete={$id}")->append($deleteicon)
                 );
         }
     }
-    echo html_writer::end_tag('tr');
+    echo $tr->end();
 }
 if ($editid < 0) {
-    echo html_writer::start_tag('tr', array('class' => 'editing'));
+    echo $tr = tag('tr')->classes('editing')->start();
     echo tag('td')->classes('order')->append(
         tag('input')->type('text')->name('field[weight]')->size(1)->value($maxweight + 1)
         );
@@ -172,15 +173,15 @@ if ($editid < 0) {
         tag('fieldset')->append(
             tag('legend')->append(get_string('fieldtype', 'local_majhub')),
             tag('label')->append(
-                tag('input')->type('radio')->name('field[type]')->value(majhub\metafield::TYPE_TEXT)->checked(true),
+                tag('input')->type('radio')->name('field[type]')->value(metafield::TYPE_TEXT)->checked(true),
                 get_string('fieldtype:text', 'local_majhub')
                 ),
             tag('label')->append(
-                tag('input')->type('radio')->name('field[type]')->value(majhub\metafield::TYPE_RADIO),
+                tag('input')->type('radio')->name('field[type]')->value(metafield::TYPE_RADIO),
                 get_string('fieldtype:radio', 'local_majhub')
                 ),
             tag('label')->append(
-                tag('input')->type('radio')->name('field[type]')->value(majhub\metafield::TYPE_CHECK),
+                tag('input')->type('radio')->name('field[type]')->value(metafield::TYPE_CHECK),
                 get_string('fieldtype:check', 'local_majhub')
                 )
             ),
@@ -193,9 +194,9 @@ if ($editid < 0) {
         tag('input')->type('hidden')->name('field[id]')->value(0), $sesskeyhidden,
         tag('input')->type('submit')->name('save')->value(get_string('add')), ' ', $cancelbutton
         );
-    echo html_writer::end_tag('tr');
+    echo $tr->end();
 } else {
-    echo html_writer::start_tag('tr');
+    echo $tr = tag('tr')->start();
     if ($editid == 0) {
         echo tag('td')->classes('order')->append(
             tag('input')->type('submit')->name('order')->value(get_string('update'))
@@ -204,10 +205,10 @@ if ($editid < 0) {
         echo tag('td')->append('');
     }
     echo tag('td')->colspan(2)->append('');
-    echo tag('td')->append(tag('a')->href($baseurl . '?edit=' . -1)->append($addicon));
-    echo html_writer::end_tag('tr');
+    echo tag('td')->append(tag('a')->href("{$PAGE->url}?edit=-1")->append($addicon));
+    echo $tr->end();
 }
-echo html_writer::end_tag('table');
+echo $table->end();
 
-echo html_writer::end_tag('form');
+echo $form->end();
 echo $OUTPUT->footer();

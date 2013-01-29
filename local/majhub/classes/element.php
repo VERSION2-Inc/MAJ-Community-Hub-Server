@@ -3,12 +3,42 @@
  *  MAJ Hub
  *  
  *  @author  VERSION2, Inc. (http://ver2.jp)
- *  @version $Id: element.php 104 2012-11-23 04:59:04Z malu $
+ *  @version $Id: element.php 176 2013-01-24 12:11:41Z malu $
  */
 namespace majhub;
 
 /**
  *  HTML element
+ *  
+ *  @method element id(string $id)
+ *  @method element onclick(string $onclick)
+ *  
+ *  <form>
+ *  @method element action(string $action)
+ *  @method element method(string $method)
+ *  @method element enctype(string $enctype)
+ *  </form>
+ *  
+ *  <input>
+ *  @method element name(string $name)
+ *  @method element value(string $value)
+ *  @method element type(string $type)
+ *  @method element size(int $size)
+ *  @method element checked(boolean $checked)
+ *  </input>
+ *  
+ *  <option>
+ *  @method element selected(boolean $selected)
+ *  </option>
+ *  
+ *  <textarea>
+ *  @method element cols(int $cols)
+ *  @method element rows(int $rows)
+ *  </textarea>
+ *  
+ *  <a>
+ *  @method element href(string $href)
+ *  </a>
  */
 class element
 {
@@ -20,6 +50,8 @@ class element
     private $styles;
     /** @var element[] */
     private $children;
+    /** @var string 'start' | 'end' */
+    private $state;
 
     /**
      *  Constructor
@@ -28,10 +60,11 @@ class element
      */
     public function __construct($tagName)
     {
-        $this->tagName    = $tagName;
+        $this->tagName    = strtolower($tagName);
         $this->attributes = array();
         $this->styles     = array();
         $this->children   = array();
+        $this->state      = null;
     }
 
     /**
@@ -39,15 +72,20 @@ class element
      */
     public function __toString()
     {
+        if ($this->state === 'end')
+            return \html_writer::end_tag($this->tagName);
         $styles = array();
         if (isset($this->attributes['style']))
             $styles[] = $this->attributes['style'];
         foreach ($this->styles as $name => $value)
             $styles[] = $name . ':' . $value . ';';
         $attr = empty($styles) ? array() : array('style' => implode(' ', $styles));
-        return empty($this->children)
-             ? \html_writer::empty_tag($this->tagName, $this->attributes + $attr)
-             : \html_writer::tag($this->tagName, implode('', $this->children), $this->attributes + $attr);
+        if ($this->state === 'start')
+            return \html_writer::start_tag($this->tagName, $this->attributes + $attr);
+        if (empty($this->children) && $this->tagName !== 'script')
+            return \html_writer::empty_tag($this->tagName, $this->attributes + $attr);
+        return \html_writer::tag($this->tagName,
+            implode('', $this->children), $this->attributes + $attr);
     }
 
     /**
@@ -79,7 +117,7 @@ class element
      *  @param string[] $class ...
      *  @return element
      */
-    public function classes(/*$class, ...*/)
+    public function classes(/*$class/*, ...*/)
     {
         $classes = self::flatten(func_get_args());
         $this->attributes['class'] = implode(' ', iterator_to_array($classes));
@@ -126,6 +164,28 @@ class element
             else
                 $this->children[] = $element;
         }
+        return $this;
+    }
+
+    /**
+     *  Renders a start tag
+     *  
+     *  @return element
+     */
+    public function start()
+    {
+        $this->state = 'start';
+        return $this;
+    }
+
+    /**
+     *  Renders a end tag
+     *  
+     *  @return element
+     */
+    public function end()
+    {
+        $this->state = 'end';
         return $this;
     }
 

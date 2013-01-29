@@ -1,9 +1,14 @@
-<?php // $Id: edit.php 125 2012-11-26 10:49:04Z malu $
+<?php // $Id: edit.php 198 2013-01-29 04:37:26Z malu $
 
 require_once __DIR__.'/../../config.php';
+require_once __DIR__.'/../../lib/filelib.php';
 require_once __DIR__.'/classes/courseware.php';
+require_once __DIR__.'/classes/element.php';
+
+function tag($tagName) { return new majhub\element($tagName); }
 
 if (false) {
+    $USER   = new stdClass;
     $OUTPUT = new core_renderer;
     $PAGE   = new moodle_page;
 }
@@ -17,13 +22,6 @@ if (!$courseware) {
     }
     print_error('error:missingcourseware', 'local_majhub', null, $id);
 }
-if ($courseware->courseid) {
-    // the preview course ready, let's redirect to there
-    redirect(new moodle_url('/course/view.php', array('id' => $courseware->course->id, 'editmetadata' => 1)));
-}
-
-// not ready yet, shows a message
-$message = get_string('visitlater', 'local_majhub');
 
 $PAGE->set_url('/local/majhub/edit.php', array('id' => $id));
 $PAGE->set_context(context_system::instance());
@@ -31,25 +29,108 @@ $PAGE->set_cacheable(false);
 
 require_login();
 
-// uses topics format style for unready course
+if ($courseware->userid != $USER->id)
+    throw new majhub\exception('accessdenied');
+
+$courseurl = $courseware->courseid ? new moodle_url('/course/view.php', array('id' => $courseware->courseid)) : null;
+
+if (optional_param('updatemetadata', null, PARAM_TEXT)) {
+    $demourl = optional_param('demourl', null, PARAM_TEXT);
+    if ($demourl) {
+        $response = download_file_content($demourl, null, null, true);
+        if (!$response || $response->status != 200)
+            $demourl = null;
+    }
+    $courseware->demourl = empty($demourl) ? null : $demourl;
+    $invalidfields = array();
+    if (isset($_POST['metadata']) && is_array($_POST['metadata'])) {
+        $values = $_POST['metadata'];
+        foreach ($courseware->metadata as $metadatum) {
+            if (isset($values[$metadatum->id]))
+                $metadatum->set_form_value($values[$metadatum->id]);
+            if ($metadatum->required) {
+                if (!isset($values[$metadatum->id]) || strlen($values[$metadatum->id]) == 0)
+                    $invalidfields[$metadatum->id] = true;
+            }
+        }
+    }
+    if (empty($invalidfields)) {
+        $courseware->update();
+        redirect($courseurl ?: $PAGE->url);
+    }
+}
+
+// uses topics format style
 $PAGE->set_pagelayout('course');
 $PAGE->set_pagetype('course-view-topics');
 
 $PAGE->set_title(get_string('course') . ': ' . $courseware->unique_fullname);
 $PAGE->set_heading($courseware->unique_fullname);
 $PAGE->navbar->add(get_string('mycourses'));
-$PAGE->navbar->add($courseware->unique_shortname);
+$PAGE->navbar->add($courseware->unique_shortname, $courseurl);
+$PAGE->navbar->add(get_string('editcoursewaremetadata', 'local_majhub'), $PAGE->url);
+
+$PAGE->requires->css('/local/majhub/edit.css');
 
 echo $OUTPUT->header();
 
-echo html_writer::start_tag('div', array('class' => 'course-content'));
-echo html_writer::start_tag('ul', array('class' => 'topics'));
-echo html_writer::start_tag('li', array('class' => 'section main clearfix'));
-echo html_writer::start_tag('div', array('class' => 'content'));
-echo html_writer::tag('h3', $message, array('class' => 'sectionname'));
-echo html_writer::end_tag('div');
-echo html_writer::end_tag('li');
-echo html_writer::end_tag('ul');
-echo html_writer::end_tag('div');
+echo $div_course_content = tag('div')->classes('course-content')->start();
+echo $ul_topics = tag('ul')->classes('topics')->start();
+echo $li_section = tag('li')->classes('section', 'main', 'clearfix')->start();
+echo $div_content = tag('div')->classes('content')->start();
+
+echo tag('h2')->classes('main')->append(get_string('editcoursewaremetadata', 'local_majhub'));
+
+$fixedrows = array(
+    get_string('title', 'local_majhub')       => $courseware->fullname,
+    get_string('contributor', 'local_majhub') => fullname($courseware->user),
+    get_string('uploadedat', 'local_majhub')  => userdate($courseware->timeuploaded),
+    get_string('filesize', 'local_majhub')    => display_size($courseware->filesize),
+//  get_string('version', 'local_majhub')     => $courseware->version,
+    );
+
+echo $form = tag('form')->action($PAGE->url)->method('post')->classes('mform')->start();
+echo tag('div')->style('display', 'none')->append(
+    tag('input')->type('hidden')->name('id')->value($id)
+    );
+echo $table = tag('table')->classes('metadata')->start();
+foreach ($fixedrows as $name => $value) {
+    echo row($name, $value);
+}
+echo row(get_string('demourl', 'local_majhub'),
+    tag('input')->type('text')->name('demourl')->value($courseware->demourl)->size(50)
+    );
+foreach ($courseware->metadata as $metadatum) {
+    $name = $metadatum->name;
+    $attr = null;
+    if ($metadatum->required) {
+        $attr = 'required';
+        $name = $name . $OUTPUT->pix_icon('req', get_string('required'), '', array('class' => 'req'));
+    } elseif ($metadatum->optional) {
+        $attr = 'optional';
+    }
+    echo row($name, $metadatum->render_form_element('metadata'), $attr);
+}
+$buttons = tag('input')->type('submit')->name('updatemetadata')->value(get_string('savechanges'));
+if ($courseurl) {
+    $buttons .= '  ';
+    $buttons .= tag('input')->type('button')->value(get_string('cancel'))->onclick("location.href = '$courseurl'");
+}
+echo row('', $buttons);
+echo $table->end();
+echo $form->end();
+
+echo $div_content->end();
+echo $li_section->end();
+echo $ul_topics->end();
+echo $div_course_content->end();
 
 echo $OUTPUT->footer();
+
+function row($th, $td, $attr = null)
+{
+    $tr = tag('tr')->append(tag('th')->append($th), tag('td')->append($td));
+    if ($attr)
+        $tr->classes($attr);
+    return $tr;
+}

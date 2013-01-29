@@ -1,6 +1,11 @@
-<?php // $Id: create.php 172 2012-12-11 08:58:26Z malu $
+<?php // $Id: create.php 176 2013-01-24 12:11:41Z malu $
 
 require_once __DIR__.'/../../../config.php';
+
+if (false) {
+    $USER = new stdClass;
+    $DB   = new mysqli_native_moodle_database;
+}
 
 try {
     require_login(null, false, null, false, true);

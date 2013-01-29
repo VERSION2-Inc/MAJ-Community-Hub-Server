@@ -1,14 +1,16 @@
-<?php // $Id: searchresults.php 173 2013-01-11 07:21:47Z malu $
+<?php // $Id: searchresults.php 178 2013-01-27 08:11:04Z malu $
 
 defined('MOODLE_INTERNAL') || die;
 
 require_once __DIR__.'/../classes/criterion.php';
 require_once __DIR__.'/../classes/metafield.php';
 require_once __DIR__.'/../classes/extension.php';
+require_once __DIR__.'/../classes/setting.php';
 
 use majhub\criterion;
 use majhub\metafield;
 use majhub\extension;
+use majhub\setting;
 
 if (false) {
     $DB     = new mysqli_native_moodle_database;
@@ -17,16 +19,15 @@ if (false) {
 
 echo html_writer::start_tag('div', array('class' => 'course-content path-course-view'));
 
-if (/*optional_param('search', null, PARAM_TEXT)*/ true) {
+$defaultlimit = setting::get('coursewaresperpagedefault');
+if ($defaultlimit > 0) {
     $keywords    = preg_split('/\s+/', optional_param('keywords', '', PARAM_TEXT), -1, PREG_SPLIT_NO_EMPTY);
     $title       = optional_param('title', '', PARAM_TEXT);
     $contributor = optional_param('contributor', '', PARAM_TEXT);
     $metadata    = isset($_REQUEST['metadata']) && is_array($_REQUEST['metadata']) ? $_REQUEST['metadata'] : array();
     $sortby      = optional_param('sortby', 'newest', PARAM_TEXT);
     $offset      = max(0, optional_param('offset', 0, PARAM_INT));
-    $limit       = min(optional_param('limit', 10, PARAM_INT), 100); // TODO
-
-    $metafields = metafield::all();
+    $limit       = min(optional_param('limit', $defaultlimit, PARAM_INT), 100);
 
     $criteria = array();
     foreach ($keywords as $keyword) {
@@ -34,7 +35,7 @@ if (/*optional_param('search', null, PARAM_TEXT)*/ true) {
             criterion::text('c.fullname', $keyword), criterion::text('c.shortname', $keyword),
             criterion::text('u.firstname', $keyword), criterion::text('u.lastname', $keyword),
             );
-        foreach ($metafields as $metafield) {
+        foreach (metafield::all() as $metafield) {
             $fieldname = "m{$metafield->id}.value";
             $keywordcriteria[] = criterion::text($fieldname, $keyword);
         }
@@ -55,7 +56,7 @@ if (/*optional_param('search', null, PARAM_TEXT)*/ true) {
         }
         $criteria[] = criterion::join('AND', $namecriteria);
     }
-    foreach ($metafields as $metafield) {
+    foreach (metafield::all() as $metafield) {
         if (isset($metadata[$metafield->id])) {
             $fieldname = "m{$metafield->id}.value";
             switch ($metafield->type) {
@@ -82,26 +83,28 @@ if (/*optional_param('search', null, PARAM_TEXT)*/ true) {
                    (SELECT COUNT(*) FROM {majhub_courseware_reviews} r WHERE r.coursewareid = c.id) AS num_reviews
             FROM {majhub_coursewares} c
             JOIN {user} u ON u.id = c.userid';
-    foreach ($metafields as $metafield) {
+    foreach (metafield::all() as $metafield) {
         $sql .= " LEFT JOIN {majhub_courseware_metadata} m{$metafield->id}
                          ON m{$metafield->id}.coursewareid = c.id AND m{$metafield->id}.metafieldid = $metafield->id";
     }
-    $sql .= ' WHERE c.courseid IS NOT NULL AND ' . $criterion->select;
+    $sql .= ' WHERE c.courseid IS NOT NULL AND ' . $criterion->expression;
     $sql .= ' GROUP BY c.id, c.fullname, c.courseid, c.demourl, c.timeuploaded, u.firstname, u.lastname';
+    $orderby = 'timeuploaded DESC';
     switch ($sortby) {
-    case 'newest': $sql .= ' ORDER BY timeuploaded DESC'; break;
-    case 'oldest': $sql .= ' ORDER BY timeuploaded ASC'; break;
-    case 'title' : $sql .= ' ORDER BY fullname ASC'; break;
-    case 'rating': $sql .= ' ORDER BY rating DESC, num_reviews DESC'; break;
+    case 'newest': $orderby = 'timeuploaded DESC'; break;
+    case 'oldest': $orderby = 'timeuploaded ASC'; break;
+    case 'title' : $orderby = 'fullname ASC'; break;
+    case 'rating': $orderby = 'rating DESC, num_reviews DESC'; break;
     case 'contributor':
         $fullnamefields = fullname((object)array('firstname' => 'firstname', 'lastname' => 'lastname'));
+        $matches = array();
         if (preg_match_all('/firstname|lastname/', $fullnamefields, $matches, PREG_PATTERN_ORDER)) {
-            $sql .= ' ORDER BY ' . implode(', ', $matches[0]);
+            $orderby =  implode(', ', $matches[0]);
         }
         break;
     }
-    $coursewares = $DB->get_records_sql($sql, $criterion->params, $offset, $limit);
-    $coursewares_count = $DB->count_records_sql("SELECT COUNT(*) FROM ($sql) _tmp", $criterion->params);
+    $coursewares = $DB->get_records_sql($sql . ' ORDER BY ' . $orderby, $criterion->parameters, $offset, $limit);
+    $coursewares_count = $DB->count_records_sql("SELECT COUNT(*) FROM ($sql) _tmp", $criterion->parameters);
 
     $strpreview  = get_string('preview', 'local_majhub');
     $strdownload = get_string('download', 'local_majhub');

@@ -1,24 +1,15 @@
-<?php // $Id: searchcriteria.php 153 2012-12-02 07:09:15Z malu $
+<?php // $Id: searchcriteria.php 176 2013-01-24 12:11:41Z malu $
 
 defined('MOODLE_INTERNAL') || die;
 
 require_once __DIR__.'/../classes/metafield.php';
+require_once __DIR__.'/../classes/setting.php';
 
 use majhub\metafield;
+use majhub\setting;
 
 if (false) {
     $PAGE = new moodle_page;
-}
-
-function searchcriteria_print_fitem($title, $element, $additionalclass = '', array $attributes = array())
-{
-    $classes = array('fitem');
-    if (!empty($additionalclass))
-        $classes[] = $additionalclass;
-    echo html_writer::start_tag('div', array('class' => implode(' ', $classes)) + $attributes);
-    echo html_writer::tag('div', $title, array('class' => 'fitemtitle'));
-    echo html_writer::tag('div', $element, array('class' => 'felement'));
-    echo html_writer::end_tag('div');
 }
 
 $fixedcriteria = array(
@@ -70,11 +61,11 @@ searchcriteria_print_fitem(
     );
 
 // limit
+$limits = array_map('intval', explode(',', setting::get('coursewaresperpageoptions')));
+$limit = optional_param('limit', setting::get('coursewaresperpagedefault'), PARAM_INT);
 searchcriteria_print_fitem(
     get_string('coursewaresperpage', 'local_majhub'),
-    html_writer::select(
-        array(5 => '5', 10 => '10', 50 => '50', 100 => '100'),
-        'limit', optional_param('limit', 10, PARAM_INT), false)
+    html_writer::select(array_combine($limits, $limits), 'limit', $limit, false)
     );
 
 // submit
@@ -89,3 +80,15 @@ echo html_writer::tag('div',
 echo html_writer::end_tag('form');
 // </form>
 ////////////////////////////////////////////////////////////////////////////////
+
+
+function searchcriteria_print_fitem($title, $element, $additionalclass = '', array $attributes = array())
+{
+    $classes = array('fitem');
+    if (!empty($additionalclass))
+        $classes[] = $additionalclass;
+    echo html_writer::start_tag('div', array('class' => implode(' ', $classes)) + $attributes);
+    echo html_writer::tag('div', $title, array('class' => 'fitemtitle'));
+    echo html_writer::tag('div', $element, array('class' => 'felement'));
+    echo html_writer::end_tag('div');
+}

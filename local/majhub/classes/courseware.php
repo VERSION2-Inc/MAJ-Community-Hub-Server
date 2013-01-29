@@ -3,11 +3,12 @@
  *  MAJ Hub
  *  
  *  @author  VERSION2, Inc. (http://ver2.jp)
- *  @version $Id: courseware.php 134 2012-11-28 02:35:14Z malu $
+ *  @version $Id: courseware.php 190 2013-01-28 12:00:02Z malu $
  */
 namespace majhub;
 
 require_once __DIR__.'/metadatum.php';
+require_once __DIR__.'/review.php';
 
 /**
  *  Courseware
@@ -16,7 +17,8 @@ require_once __DIR__.'/metadatum.php';
  *  @property-read \stdClass $course
  *  @property-read \stored_file $file
  *  @property-read metadatum[] $metadata
- *  @property-read float $rating
+ *  @property-read float $avarage_rating
+ *  @property-read int $number_of_reviews
  *  @property-read string $unique_fullname   The course full name with the unique id prefix
  *  @property-read string $unique_shortname  The course short name with the unique id prefix
  */
@@ -48,7 +50,7 @@ class courseware
     public $deleted;
     /** @var int */
     public $timecreated;
-    /** @var int|null */
+    /** @var int */
     public $timemodified;
     /** @var int|null */
     public $timeuploaded;
@@ -97,7 +99,7 @@ class courseware
                  ORDER BY f.optional ASC, f.weight ASC',
                 array($this->id)
                 );
-            $metadata = array_reduce($records, function ($map, $record)
+            return $this->_cache[$name] = array_reduce($records, function (\ArrayIterator $metadata, $record)
             {
                 $metadatum = new metadatum;
                 $metadatum->field = metafield::from_record($record);
@@ -105,19 +107,48 @@ class courseware
                 if ($metadatum->type == metafield::TYPE_CHECK) {
                     $metadatum->value = preg_split('/[\r\n]+/', $metadatum->value, -1, PREG_SPLIT_NO_EMPTY);
                 }
-                $map[$metadatum->id] = $metadatum;
-                return $map;
-            }, array());
-            return $this->_cache[$name] = new \ArrayIterator($metadata);
-        case 'rating':
+                $metadata[$metadatum->id] = $metadatum;
+                return $metadata;
+            }, new \ArrayIterator);
+        case 'avarage_rating':
             return $this->_cache[$name] = $DB->get_field(
-                'majhub_courseware_reviews', 'AVG(rating)', array('coursewareid' => $this->id));
+                review::TABLE, 'AVG(rating)', array('coursewareid' => $this->id));
+        case 'number_of_reviews':
+            return $this->_cache[$name] = $DB->count_records(review::TABLE, array('coursewareid' => $this->id));
         case 'unique_fullname':
-            return self::generate_unique_name($this->id, $this->fullname);
+            return $this->_cache[$name] = self::generate_unique_name($this->id, $this->fullname);
         case 'unique_shortname':
-            return self::generate_unique_name($this->id, $this->shortname);
+            return $this->_cache[$name] = self::generate_unique_name($this->id, $this->shortname);
         }
         throw new \InvalidArgumentException();
+    }
+
+    /**
+     *  Gets whether courseware is reviewed by the user
+     *  
+     *  @global \moodle_database $DB
+     *  @param int $userid
+     *  @return boolean
+     */
+    public function is_reviewed_by($userid)
+    {
+        global $DB;
+        return $DB->record_exists(review::TABLE, array('coursewareid' => $this->id, 'userid' => $userid));
+    }
+
+    /**
+     *  Gets courseware reviews
+     *  
+     *  @global \moodle_database $DB
+     *  @param int $sort
+     *  @return review[]
+     */
+    public function get_reviews($limit = null, $sort = 'timemodified DESC')
+    {
+        global $DB;
+
+        $records = $DB->get_records(review::TABLE, array('coursewareid' => $this->id), $sort, '*', 0, (int)$limit);
+        return array_map(function ($record) { return review::from_record($record); }, $records);
     }
 
     /**

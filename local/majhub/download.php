@@ -1,8 +1,9 @@
-<?php // $Id: download.php 91 2012-11-21 08:45:29Z malu $
+<?php // $Id: download.php 182 2013-01-28 08:30:53Z malu $
 
 require_once __DIR__.'/../../config.php';
 require_once __DIR__.'/../../lib/filelib.php';
 require_once __DIR__.'/classes/courseware.php';
+require_once __DIR__.'/classes/point.php';
 
 if (false) {
     $USER = new stdClass;
@@ -20,11 +21,12 @@ $PAGE->set_cacheable(false);
 
 require_login($courseware->course, false);
 
-// TODO: check permissions for downloading courseware
-
 if (!$DB->record_exists('majhub_courseware_downloads',
     array('userid' => $USER->id, 'coursewareid' => $courseware->id)))
 {
+    if (majhub\point::from_userid($USER->id)->total < majhub\point::get_settings()->pointsfordownloading)
+        throw new majhub\exception('shortofpointsfordownloading');
+
     $record = new stdClass;
     $record->userid       = $USER->id;
     $record->coursewareid = $courseware->id;

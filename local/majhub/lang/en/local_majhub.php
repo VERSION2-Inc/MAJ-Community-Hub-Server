@@ -1,4 +1,4 @@
-<?php // $Id: local_majhub.php 159 2012-12-03 06:18:27Z malu $
+<?php // $Id: local_majhub.php 194 2013-01-29 03:11:14Z malu $
 
 $string['pluginname'] = 'MAJ Community Hub';
 
@@ -19,12 +19,19 @@ $string['uploadedat'] = 'Uploaded';
 $string['filesize'] = 'File size';
 $string['version'] = 'Version';
 $string['demourl'] = 'Demo site';
-$string['rating'] = 'Rating';
-$string['review'] = 'Review';
 
 $string['preview'] = 'Preview';
 $string['download'] = 'Download';
 $string['demosite'] = 'Demo site';
+
+$string['review'] = 'Review';
+$string['rating'] = 'Rating';
+$string['moderator'] = 'Moderator';
+$string['overallrating'] = 'Overall';
+$string['latestreviews'] = 'Latest {$a->latest} of {$a->total} reviews';
+$string['youhavepoints'] = 'You have {$a} points';
+
+$string['give'] = 'Give';
 
 $string['sortby:newest'] = 'Newest';
 $string['sortby:oldest'] = 'Oldest';
@@ -40,10 +47,27 @@ $string['hideoptionalcriteria'] = 'Hide optional criteria';
 $string['previewthiscourseware'] = 'Preview this courseware';
 $string['downloadthiscourseware'] = 'Download this courseware';
 $string['visitauthorsdemosite'] = 'Visit author\'s demo site';
+$string['editcoursewaremetadata'] = 'Edit courseware metadata';
 
 $string['noresult'] = 'No result';
 
+$string['settings/frontpage'] = 'Front page settings';
 $string['settings/metafields'] = 'Meta field definitions';
+$string['settings/pointsystem'] = 'Point system settings';
+
+$string['coursewaresperpageoptions'] = 'Choices for coursewares per page';
+$string['coursewaresperpagedefault'] = 'Default coursewares per page';
+
+$string['pointacquisitions'] = 'Point acquisitions';
+$string['pointsforregistration'] = 'Registration bonus points';
+$string['pointsforuploading'] = 'Points for uploading';
+$string['pointsforreviewing'] = 'Points for reviewing';
+$string['pointsforquality'] = 'Quality bonus points';
+$string['pointsforpopularity'] = 'Popularity bonus points';
+$string['countforpopularity'] = 'Number of downloads for popularity bonus acquisition';
+
+$string['pointconsumptions'] = 'Point consumptions';
+$string['pointsfordownloading'] = 'Downloading cost';
 
 $string['fieldtype'] = 'Type';
 $string['fieldtype:text'] = 'Text';
@@ -54,12 +78,17 @@ $string['attributes:required'] = 'Required';
 $string['attributes:optional'] = 'Optional';
 $string['options'] = 'Options';
 
+$string['confirm:purchase'] = 'Do you want to pay {$a} points for downloading this courseware?';
+
 $string['confirm:metafield:delete'] = 'Are you sure you really want to delete this meta field?';
 $string['confirm:metafield:delete:warning'] = 'WARNING !!
 The associated meta data which had been entered by users will be unlinked permanently.
 They will never be recovered even if you redefine a same-name meta field.';
 
+$string['error:accessdenied'] = 'Access denied
+(If you have multiple accounts on this Hub server, log in as the account you entered in your Hub Client.)';
 $string['error:missingcourseware'] = 'Courseware #{$a} is missing';
+$string['error:shortofpointsfordownloading'] = 'Short of points for downloading';
 
 $string['error:metafield:emptyname'] = 'Name cannot be empty';
 $stirng['error:metafield:emptyoptions'] = 'Options cannot be empty if type is not Text';

@@ -1,21 +1,23 @@
 <?php
 
 require_once __DIR__.'/../../local/majhub/classes/courseware.php';
+require_once __DIR__.'/../../local/majhub/classes/point.php';
 
 /**
  *  MAJ Hub block
  *  
  *  @author  VERSION2, Inc. (http://ver2.jp)
- *  @version $Id: block_majhub.php 166 2012-12-05 05:54:33Z malu $
+ *  @version $Id: block_majhub.php 197 2013-01-29 04:29:22Z malu $
  */
 class block_majhub extends block_base
 {
+    const MODERATOR_CAPABILITY = 'moodle/course:manageactivities';
     const MAX_REVIEWS = 3;
 
     public function init()
     {
         $this->title   = get_string('blocktitle', __CLASS__);
-        $this->version = 2012120100;
+        $this->version = 2013012901;
     }
 
     public function applicable_formats()
@@ -47,26 +49,25 @@ class block_majhub extends block_base
 
         $html = '';
 
-        //$isadmin = has_capability('moodle/site:config', context_system::instance());
+        $coursecontext = context_course::instance($this->page->course->id);
+        $ismoderator = has_capability(self::MODERATOR_CAPABILITY, $coursecontext);
         $isowner = $courseware->userid == $USER->id;
-        $editing = $isowner && optional_param('editmetadata', 0, PARAM_INT);
 
-        if ($isowner && optional_param('updatemetadata', null, PARAM_TEXT)) {
-            $demourl = optional_param('demourl', null, PARAM_TEXT);
-            if (empty($demourl)) {
-                $courseware->demourl = null;
-            } elseif (self::is_url_accessible($demourl)) {
-                $courseware->demourl = $demourl;
+        $purchased = $DB->record_exists('majhub_courseware_downloads',
+            array('userid' => $USER->id, 'coursewareid' => $courseware->id));
+        $userpoint = majhub\point::from_userid($USER->id);
+
+        if ($ismoderator && optional_param('givebonuspointsforquality', null, PARAM_TEXT)) {
+            $bonuspointsforquality = optional_param('bonuspointsforquality', 0, PARAM_INT);
+            if ($bonuspointsforquality != 0) {
+                $bonuspoint = new stdClass;
+                $bonuspoint->coursewareid = $courseware->id;
+                $bonuspoint->userid       = $USER->id;
+                $bonuspoint->reason       = 'quality';
+                $bonuspoint->points       = $bonuspointsforquality;
+                $bonuspoint->timecreated  = time();
+                $DB->insert_record('majhub_bonus_points', $bonuspoint);
             }
-            if (isset($_POST['metadata']) && is_array($_POST['metadata'])) {
-                $values = $_POST['metadata'];
-                foreach ($courseware->metadata as $metadatum) {
-                    if (isset($values[$metadatum->id])) {
-                        $metadatum->set_form_value($values[$metadatum->id]);
-                    }
-                }
-            }
-            $courseware->update();
             redirect($this->page->url);
         }
         if (optional_param('submitreview', null, PARAM_TEXT)) {
@@ -94,6 +95,15 @@ class block_majhub extends block_base
             }
             redirect($this->page->url);
         }
+        if ($pro = optional_param('pro', 0, PARAM_INT) or $con = optional_param('con', 0, PARAM_INT)) {
+            $proscons = new stdClass;
+            $proscons->userid      = $USER->id;
+            $proscons->reviewid    = $pro ?: $con;
+            $proscons->procon      = $pro ? 'pro' : 'con';
+            $proscons->timecreated = time();
+            $DB->insert_record('majhub_review_proscons', $proscons);
+            redirect($this->page->url);
+        }
 
         $dateformat = get_string('strftimedateshort', 'langconfig');
         $fixedrows = array(
@@ -106,65 +116,57 @@ class block_majhub extends block_base
 
         if ($isowner) {
             $html .= html_writer::tag('div',
-                $OUTPUT->action_icon(
-                    new moodle_url($this->page->url, array('editmetadata' => 1)),
-                    new pix_icon('i/edit', get_string('edit'))
+                $OUTPUT->action_link(
+                    new moodle_url('/local/majhub/edit.php', array('id' => $courseware->id)),
+                    $OUTPUT->pix_icon('i/edit', get_string('edit')) . get_string('editmetadata', 'block_majhub')
                     ),
                 array('class' => 'editmetadata')
                 );
-        }
-        if ($editing) {
-            $html .= html_writer::start_tag('form',
-                array('action' => $this->page->url, 'method' => 'post', 'class' => 'mform')
-                );
-            $html .= self::render_input('id', $this->page->url->param('id'), 'hidden');
         }
         $html .= html_writer::start_tag('table', array('class' => 'metadata'));
         foreach ($fixedrows as $name => $value) {
             $html .= self::render_row($name, $value);
         }
-        $html .= self::render_row(get_string('demourl', 'local_majhub'),
-            $editing ? self::render_input('demourl', $courseware->demourl) : self::render_url($courseware->demourl)
-            );
+        $html .= self::render_row(get_string('demourl', 'local_majhub'), self::render_url($courseware->demourl));
         foreach ($courseware->metadata as $metadatum) {
-            $name = $metadatum->name;
-            $attr = null;
-            if ($editing && $metadatum->required) {
-                $attr = array('class' => 'required');
-                $name = $name . $OUTPUT->pix_icon('req', get_string('required'), '', array('class' => 'req'));
-            } elseif ($metadatum->optional) {
-                $attr = array('class' => 'optional');
-            }
-            $value = $editing ? $metadatum->render_form_element('metadata', '<br />') : $metadatum->render(', ');
-            $html .= self::render_row($name, $value, $attr);
+            $html .= self::render_row($metadatum->name, $metadatum->render(', '),
+                $metadatum->optional ? array('class' => 'optional') : null);
         }
-        if ($editing) {
-            $html .= self::render_row('', self::render_input('updatemetadata', get_string('update'), 'submit'));
-        }
-        $html .= self::render_row(get_string('rating', 'local_majhub'), self::render_rating($courseware->rating));
         $html .= html_writer::end_tag('table');
-        if ($editing) {
-            $html .= html_writer::end_tag('form');
-        }
 
         // download link
+        $price = majhub\point::get_settings()->pointsfordownloading;
+        $downloadurl = new moodle_url('/local/majhub/download.php', array('id' => $courseware->id));
+        $strdownload = $OUTPUT->pix_icon('t/download', '') . get_string('download');
+        $attrdownload = array('title' => get_string('downloadthiscourseware', 'local_majhub'));
+        if ($purchased) {
+            $html .= html_writer::start_tag('div', array('class' => 'action download'));
+            $html .= $OUTPUT->action_link($downloadurl, $strdownload, null, $attrdownload);
+            $html .= html_writer::end_tag('div');
+        } elseif ($userpoint->total >= $price) {
+            $confirmpurchase = new confirm_action(get_string('confirm:purchase', 'local_majhub', $price));
+            $html .= html_writer::start_tag('div', array('class' => 'action download'));
+            $html .= $OUTPUT->action_link($downloadurl, $strdownload, $confirmpurchase, $attrdownload);
+            $html .= html_writer::end_tag('div');
+        } else {
+            $html .= html_writer::tag('div', $strdownload, array('class' => 'action download grayed'));
+        }
         $html .= html_writer::tag('div',
-            html_writer::link(new moodle_url('/local/majhub/download.php', array('id' => $courseware->id)),
-                $OUTPUT->pix_icon('t/download', '') . get_string('download')
-                ),
-            array('class' => 'action download', 'title' => get_string('downloadthiscourseware', 'local_majhub'))
+            get_string('youhavepoints', 'local_majhub', $userpoint->total),
+            array('class' => $userpoint->total >= $price ? 'points' : 'points short')
             );
 
         $html .= html_writer::empty_tag('hr');
 
         // reviews
-        $reviews = $DB->get_records_sql(
-            'SELECT r.*, u.firstname, u.lastname FROM {majhub_courseware_reviews} r JOIN {user} u ON u.id = r.userid
-             WHERE r.coursewareid = :coursewareid ORDER BY r.timemodified DESC',
-            array('coursewareid' => $courseware->id),
-            0, optional_param('showallreviews', 0, PARAM_INT) ? 0 : self::MAX_REVIEWS);
-        $reviewed = array_reduce($reviews, function ($f, $r) use ($USER) { return $f || $r->userid == $USER->id; });
+        $reviews = $courseware->get_reviews(optional_param('showallreviews', 0, PARAM_INT) ? 0 : self::MAX_REVIEWS);
+        $reviewed = $courseware->is_reviewed_by($USER->id);
         $html .= html_writer::start_tag('div', array('class' => 'reviews'));
+        $html .= html_writer::tag('div',
+            html_writer::tag('span', get_string('overallrating', 'local_majhub')) .
+            self::render_rating($courseware->avarage_rating),
+            array('class' => 'overall')
+            );
         if ($reviewed) {
             // should the review be modifiable?
         } elseif (optional_param('editreview', 0, PARAM_INT)) {
@@ -192,18 +194,95 @@ class block_majhub extends block_base
                 array('class' => 'action review', 'title' => get_string('review', 'local_majhub'))
                 );
         }
+        $moderatoricon = $OUTPUT->pix_icon('f/moodle', get_string('moderator', 'local_majhub'));
         foreach ($reviews as $review) {
+            $fullname = fullname($review->user);
+            if (has_capability(self::MODERATOR_CAPABILITY, $coursecontext, $review->user)) {
+                $fullname = html_writer::tag('span', $moderatoricon . $fullname, array('class' => 'moderator'));
+            }
             $html .= html_writer::start_tag('div', array('class' => 'review'));
-            $html .= html_writer::tag('div', self::render_rating($review->rating) . ' ' . fullname($review));
-            $html .= html_writer::tag('div', nl2br(clean_text($review->comment)));
+            $html .= html_writer::tag('div',
+                html_writer::tag('div', $OUTPUT->user_picture($review->user), array('class' => 'picture')) .
+                html_writer::tag('div', self::render_rating($review->rating), array('class' => 'rating')) .
+                html_writer::tag('div', $this->render_proscons($review->id), array('class' => 'proscons')) .
+                html_writer::tag('div', $fullname, array('class' => 'fullname')),
+                array('class' => 'userinfo')
+                );
+            $html .= html_writer::tag('div', nl2br(clean_text($review->comment)), array('class' => 'comment'));
             $html .= html_writer::end_tag('div');
         }
-        $html .= html_writer::end_tag('div');
+        if (count($reviews) < $courseware->number_of_reviews) {
+            $html .= html_writer::tag('div',
+                get_string('latestreviews', 'local_majhub',
+                    (object)array('latest' => count($reviews), 'total' => $courseware->number_of_reviews)) .
+                ' ' .
+                $OUTPUT->action_link(new moodle_url($this->page->url, array('showallreviews' => 1)), '...'),
+                array('class' => 'ellipsis')
+                );
+        }
+        $html .= html_writer::end_tag('div'); // reviews
+
+        // moderator actions
+        if ($ismoderator) {
+            $html .= html_writer::empty_tag('hr');
+            $html .= html_writer::start_tag('form',
+                array('action' => $this->page->url, 'method' => 'post', 'class' => 'mform bonuspoints')
+                );
+            $html .= self::render_input('id', $this->page->url->param('id'), 'hidden');
+            $html .= get_string('pointsforquality', 'local_majhub') . ': ';
+            $bonuspoints = $DB->count_records_sql(
+                'SELECT SUM(points) FROM {majhub_bonus_points}
+                 WHERE coursewareid = :coursewareid AND reason = :reason',
+                array('coursewareid' => $courseware->id, 'reason' => 'quality')
+                );
+            if ($bonuspoints > 0) {
+                $html .= html_writer::tag('span', $bonuspoints);
+            } else {
+                $html .= html_writer::start_tag('div');
+                $html .= self::render_input('bonuspointsforquality',
+                    majhub\point::get_settings()->pointsforquality, 'text', array('size' => 2, 'class' => 'points')
+                    );
+                $html .= self::render_input('givebonuspointsforquality', get_string('give', 'local_majhub'), 'submit');
+                $html .= html_writer::end_tag('div');
+            }
+            $html .= html_writer::end_tag('form');
+        }
 
         $this->page->requires->js_init_call('M.block_majhub.init');
         $this->page->requires->string_for_js('optionalfields', 'local_majhub');
 
         return $this->content = (object)array('text' => $html);
+    }
+
+    /**
+     *  Renders pros and cons
+     *  
+     *  @global object $USER
+     *  @global moodle_database $DB
+     *  @global core_renderer $OUTPUT
+     *  @param int $reviewid
+     *  @return string
+     */
+    private function render_proscons($reviewid)
+    {
+        global $USER, $DB, $OUTPUT;
+
+        $pros = $DB->count_records('majhub_review_proscons', array('reviewid' => $reviewid, 'procon' => 'pro'));
+        $cons = $DB->count_records('majhub_review_proscons', array('reviewid' => $reviewid, 'procon' => 'con'));
+        if ($DB->record_exists('majhub_review_proscons', array('reviewid' => $reviewid, 'userid' => $USER->id))) {
+            $pro = $OUTPUT->pix_icon('s/yes', '');
+            $con = $OUTPUT->pix_icon('s/no', '');
+            return $pro . $pros . ' ' . $con . $cons;
+        }
+        $pro = $OUTPUT->action_icon(
+            new moodle_url($this->page->url, array('pro' => $reviewid)),
+            new pix_icon('s/yes', '')
+            );
+        $con = $OUTPUT->action_icon(
+            new moodle_url($this->page->url, array('con' => $reviewid)),
+            new pix_icon('s/no', '')
+            );
+        return $pro . $pros . ' ' . $con . $cons;
     }
 
     /**
@@ -227,11 +306,16 @@ class block_majhub extends block_base
      *  
      *  @param string $name
      *  @param string $value
+     *  @param string $type
+     *  @param array $attributes
      *  @return string
      */
-    private static function render_input($name, $value, $type = 'text')
+    private static function render_input($name, $value, $type = 'text', array $attributes = null)
     {
-        return html_writer::empty_tag('input', array('type' => $type, 'name' => $name, 'value' => $value));
+        $attrs = array('type' => $type, 'name' => $name, 'value' => $value);
+        if ($attributes !== null)
+            $attrs += $attributes;
+        return html_writer::empty_tag('input', $attrs);
     }
 
     /**
