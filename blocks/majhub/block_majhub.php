@@ -1,23 +1,23 @@
 <?php
 
 require_once __DIR__.'/../../local/majhub/classes/courseware.php';
+require_once __DIR__.'/../../local/majhub/classes/capability.php';
 require_once __DIR__.'/../../local/majhub/classes/point.php';
 
 /**
  *  MAJ Hub block
  *  
  *  @author  VERSION2, Inc. (http://ver2.jp)
- *  @version $Id: block_majhub.php 197 2013-01-29 04:29:22Z malu $
+ *  @version $Id: block_majhub.php 201 2013-01-30 05:17:22Z malu $
  */
 class block_majhub extends block_base
 {
-    const MODERATOR_CAPABILITY = 'moodle/course:manageactivities';
     const MAX_REVIEWS = 3;
 
     public function init()
     {
         $this->title   = get_string('blocktitle', __CLASS__);
-        $this->version = 2013012901;
+        $this->version = 2013013000;
     }
 
     public function applicable_formats()
@@ -49,9 +49,9 @@ class block_majhub extends block_base
 
         $html = '';
 
-        $coursecontext = context_course::instance($this->page->course->id);
-        $ismoderator = has_capability(self::MODERATOR_CAPABILITY, $coursecontext);
         $isowner = $courseware->userid == $USER->id;
+        $isadmin = majhub\capability::is_admin($USER);
+        $ismoderator = majhub\capability::is_moderator($USER);
 
         $purchased = $DB->record_exists('majhub_courseware_downloads',
             array('userid' => $USER->id, 'coursewareid' => $courseware->id));
@@ -114,7 +114,7 @@ class block_majhub extends block_base
         //  get_string('version', 'local_majhub')     => $courseware->version,
             );
 
-        if ($isowner) {
+        if ($isowner || $isadmin /* || $ismoderator */) {
             $html .= html_writer::tag('div',
                 $OUTPUT->action_link(
                     new moodle_url('/local/majhub/edit.php', array('id' => $courseware->id)),
@@ -197,7 +197,7 @@ class block_majhub extends block_base
         $moderatoricon = $OUTPUT->pix_icon('f/moodle', get_string('moderator', 'local_majhub'));
         foreach ($reviews as $review) {
             $fullname = fullname($review->user);
-            if (has_capability(self::MODERATOR_CAPABILITY, $coursecontext, $review->user)) {
+            if (majhub\capability::is_moderator($review->user)) {
                 $fullname = html_writer::tag('span', $moderatoricon . $fullname, array('class' => 'moderator'));
             }
             $html .= html_writer::start_tag('div', array('class' => 'review'));

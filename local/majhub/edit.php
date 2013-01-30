@@ -1,8 +1,9 @@
-<?php // $Id: edit.php 198 2013-01-29 04:37:26Z malu $
+<?php // $Id: edit.php 200 2013-01-30 05:17:17Z malu $
 
 require_once __DIR__.'/../../config.php';
 require_once __DIR__.'/../../lib/filelib.php';
 require_once __DIR__.'/classes/courseware.php';
+require_once __DIR__.'/classes/capability.php';
 require_once __DIR__.'/classes/element.php';
 
 function tag($tagName) { return new majhub\element($tagName); }
@@ -29,7 +30,9 @@ $PAGE->set_cacheable(false);
 
 require_login();
 
-if ($courseware->userid != $USER->id)
+$isowner = $courseware->userid == $USER->id;
+$isadmin = majhub\capability::is_admin($USER);
+if (!$isowner && !$isadmin)
     throw new majhub\exception('accessdenied');
 
 $courseurl = $courseware->courseid ? new moodle_url('/course/view.php', array('id' => $courseware->courseid)) : null;

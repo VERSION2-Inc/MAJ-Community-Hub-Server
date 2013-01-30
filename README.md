@@ -1,12 +1,14 @@
 MAJ Community Hub Server
 ========================
 
-version 2.3, release 2 - 2013.01.29
+version 2.3, release 2 patch 1 - 2013.01.30
 
 
 Change Log
 ----------
 
+* 2.3, release 2 patch 1
+  * Improvement: Site admin is also able to edit metadata
 * 2.3, release 2
   * New feature: Point System
   * Improvement: Review
