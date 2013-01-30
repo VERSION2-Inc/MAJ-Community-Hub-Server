@@ -1,4 +1,4 @@
-<?php // $Id: searchresults.php 178 2013-01-27 08:11:04Z malu $
+<?php // $Id: searchresults.php 202 2013-01-30 09:18:03Z malu $
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -32,7 +32,7 @@ if ($defaultlimit > 0) {
     $criteria = array();
     foreach ($keywords as $keyword) {
         $keywordcriteria = array(
-            criterion::text('c.fullname', $keyword), criterion::text('c.shortname', $keyword),
+            criterion::text('cw.fullname', $keyword), criterion::text('cw.shortname', $keyword),
             criterion::text('u.firstname', $keyword), criterion::text('u.lastname', $keyword),
             );
         foreach (metafield::all() as $metafield) {
@@ -43,7 +43,7 @@ if ($defaultlimit > 0) {
     }
     if (strlen($title) != 0) {
         $criteria[] = criterion::join('OR',
-            array(criterion::text('c.fullname', $title), criterion::text('c.shortname', $title))
+            array(criterion::text('cw.fullname', $title), criterion::text('cw.shortname', $title))
             );
     }
     if (strlen($contributor) != 0) {
@@ -78,17 +78,18 @@ if ($defaultlimit > 0) {
     }
     $criterion = criterion::join('AND', $criteria);
 
-    $sql = 'SELECT c.id, c.fullname, c.courseid, c.demourl, c.timeuploaded, u.firstname, u.lastname,
-                   (SELECT AVG(r.rating) FROM {majhub_courseware_reviews} r WHERE r.coursewareid = c.id) AS rating,
-                   (SELECT COUNT(*) FROM {majhub_courseware_reviews} r WHERE r.coursewareid = c.id) AS num_reviews
-            FROM {majhub_coursewares} c
-            JOIN {user} u ON u.id = c.userid';
+    $sql = 'SELECT cw.id, cw.fullname, cw.courseid, cw.demourl, cw.timeuploaded, u.firstname, u.lastname,
+                   (SELECT AVG(r.rating) FROM {majhub_courseware_reviews} r WHERE r.coursewareid = cw.id) AS rating,
+                   (SELECT COUNT(*) FROM {majhub_courseware_reviews} r WHERE r.coursewareid = cw.id) AS num_reviews
+            FROM {majhub_coursewares} cw
+            JOIN {course} c ON c.id = cw.courseid
+            JOIN {user} u ON u.id = cw.userid';
     foreach (metafield::all() as $metafield) {
         $sql .= " LEFT JOIN {majhub_courseware_metadata} m{$metafield->id}
-                         ON m{$metafield->id}.coursewareid = c.id AND m{$metafield->id}.metafieldid = $metafield->id";
+                         ON m{$metafield->id}.coursewareid = cw.id AND m{$metafield->id}.metafieldid = $metafield->id";
     }
-    $sql .= ' WHERE c.courseid IS NOT NULL AND ' . $criterion->expression;
-    $sql .= ' GROUP BY c.id, c.fullname, c.courseid, c.demourl, c.timeuploaded, u.firstname, u.lastname';
+    $sql .= ' WHERE ' . $criterion->expression;
+    $sql .= ' GROUP BY cw.id, cw.fullname, cw.courseid, cw.demourl, cw.timeuploaded, u.firstname, u.lastname';
     $orderby = 'timeuploaded DESC';
     switch ($sortby) {
     case 'newest': $orderby = 'timeuploaded DESC'; break;

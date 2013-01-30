@@ -8,7 +8,7 @@ require_once __DIR__.'/../../local/majhub/classes/point.php';
  *  MAJ Hub block
  *  
  *  @author  VERSION2, Inc. (http://ver2.jp)
- *  @version $Id: block_majhub.php 201 2013-01-30 05:17:22Z malu $
+ *  @version $Id: block_majhub.php 203 2013-01-30 09:18:12Z malu $
  */
 class block_majhub extends block_base
 {
@@ -17,7 +17,7 @@ class block_majhub extends block_base
     public function init()
     {
         $this->title   = get_string('blocktitle', __CLASS__);
-        $this->version = 2013013000;
+        $this->version = 2013013001;
     }
 
     public function applicable_formats()
@@ -105,10 +105,14 @@ class block_majhub extends block_base
             redirect($this->page->url);
         }
 
+        $userlink = $OUTPUT->action_link(
+            new moodle_url('/user/profile.php', array('id' => $courseware->user->id)),
+            fullname($courseware->user)
+            );
         $dateformat = get_string('strftimedateshort', 'langconfig');
         $fixedrows = array(
             get_string('title', 'local_majhub')       => $courseware->fullname,
-            get_string('contributor', 'local_majhub') => fullname($courseware->user),
+            get_string('contributor', 'local_majhub') => $userlink,
             get_string('uploadedat', 'local_majhub')  => userdate($courseware->timerestored, $dateformat),
             get_string('filesize', 'local_majhub')    => display_size($courseware->filesize),
         //  get_string('version', 'local_majhub')     => $courseware->version,
@@ -134,8 +138,10 @@ class block_majhub extends block_base
         }
         $html .= html_writer::end_tag('table');
 
-        // download link
-        $price = majhub\point::get_settings()->pointsfordownloading;
+        $html .= html_writer::empty_tag('hr');
+
+        // actions
+        $downloadcost = majhub\point::get_settings()->pointsfordownloading;
         $downloadurl = new moodle_url('/local/majhub/download.php', array('id' => $courseware->id));
         $strdownload = $OUTPUT->pix_icon('t/download', '') . get_string('download');
         $attrdownload = array('title' => get_string('downloadthiscourseware', 'local_majhub'));
@@ -143,8 +149,8 @@ class block_majhub extends block_base
             $html .= html_writer::start_tag('div', array('class' => 'action download'));
             $html .= $OUTPUT->action_link($downloadurl, $strdownload, null, $attrdownload);
             $html .= html_writer::end_tag('div');
-        } elseif ($userpoint->total >= $price) {
-            $confirmpurchase = new confirm_action(get_string('confirm:purchase', 'local_majhub', $price));
+        } elseif ($userpoint->total >= $downloadcost) {
+            $confirmpurchase = new confirm_action(get_string('confirm:purchase', 'local_majhub', $downloadcost));
             $html .= html_writer::start_tag('div', array('class' => 'action download'));
             $html .= $OUTPUT->action_link($downloadurl, $strdownload, $confirmpurchase, $attrdownload);
             $html .= html_writer::end_tag('div');
@@ -153,7 +159,7 @@ class block_majhub extends block_base
         }
         $html .= html_writer::tag('div',
             get_string('youhavepoints', 'local_majhub', $userpoint->total),
-            array('class' => $userpoint->total >= $price ? 'points' : 'points short')
+            array('class' => $userpoint->total >= $downloadcost ? 'points' : 'points short')
             );
 
         $html .= html_writer::empty_tag('hr');

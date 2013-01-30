@@ -1,4 +1,4 @@
-<?php // $Id: leaderboard.php 114 2012-11-24 05:58:35Z malu $
+<?php // $Id: leaderboard.php 202 2013-01-30 09:18:03Z malu $
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -9,26 +9,29 @@ if (false) {
 const LEADERBOARD_LIMIT = 5;
 
 $mostdownloadedcoursewares = $DB->get_records_sql(
-    'SELECT c.*, (SELECT COUNT(*) FROM {majhub_courseware_downloads} d WHERE d.coursewareid = c.id) AS num_downloads
-     FROM {majhub_coursewares} c WHERE c.courseid IS NOT NULL AND c.deleted = 0
-     ORDER BY num_downloads DESC, timeuploaded DESC',
+    'SELECT cw.*, (SELECT COUNT(*) FROM {majhub_courseware_downloads} d WHERE d.coursewareid = cw.id) AS num_downloads
+     FROM {majhub_coursewares} cw JOIN {course} c ON c.id = cw.courseid WHERE cw.deleted = 0
+     ORDER BY num_downloads DESC, cw.timeuploaded DESC',
     null, 0, LEADERBOARD_LIMIT);
 
 $topratedcoursewares = $DB->get_records_sql(
-    'SELECT c.*, (SELECT AVG(r.rating) FROM {majhub_courseware_reviews} r WHERE r.coursewareid = c.id) AS avg_rating,
-                 (SELECT COUNT(*) FROM {majhub_courseware_reviews} r WHERE r.coursewareid = c.id) AS num_reviews
-     FROM {majhub_coursewares} c WHERE c.courseid IS NOT NULL AND c.deleted = 0
-     ORDER BY avg_rating DESC, num_reviews DESC, timeuploaded DESC',
+    'SELECT cw.*, (SELECT AVG(r.rating) FROM {majhub_courseware_reviews} r WHERE r.coursewareid = cw.id) AS avg_rating,
+                  (SELECT COUNT(*) FROM {majhub_courseware_reviews} r WHERE r.coursewareid = cw.id) AS num_reviews
+     FROM {majhub_coursewares} cw JOIN {course} c ON c.id = cw.courseid WHERE cw.deleted = 0
+     ORDER BY avg_rating DESC, num_reviews DESC, cw.timeuploaded DESC',
     null, 0, LEADERBOARD_LIMIT);
 
 $mostreviewedcoursewares = $DB->get_records_sql(
-    'SELECT c.*, (SELECT COUNT(*) FROM {majhub_courseware_reviews} r WHERE r.coursewareid = c.id) AS num_reviews
-     FROM {majhub_coursewares} c WHERE c.courseid IS NOT NULL AND c.deleted = 0
-     ORDER BY num_reviews DESC, timeuploaded DESC',
+    'SELECT cw.*, (SELECT COUNT(*) FROM {majhub_courseware_reviews} r WHERE r.coursewareid = c.id) AS num_reviews
+     FROM {majhub_coursewares} cw JOIN {course} c ON c.id = cw.courseid WHERE cw.deleted = 0
+     ORDER BY num_reviews DESC, cw.timeuploaded DESC',
     null, 0, LEADERBOARD_LIMIT);
 
-$latestcoursewares = $DB->get_records_select('majhub_coursewares', 'courseid IS NOT NULL AND deleted = 0',
-    null, 'timeuploaded DESC', '*', 0, LEADERBOARD_LIMIT);
+$latestcoursewares = $DB->get_records_sql(
+    'SELECT cw.*
+     FROM {majhub_coursewares} cw JOIN {course} c ON c.id = cw.courseid WHERE cw.deleted = 0
+     ORDER BY cw.timeuploaded DESC',
+    null, 0, LEADERBOARD_LIMIT);
 
 
 function leaderboard_print_list($title, array $coursewares)

@@ -1,4 +1,4 @@
-<?php // $Id: edit.php 200 2013-01-30 05:17:17Z malu $
+<?php // $Id: edit.php 202 2013-01-30 09:18:03Z malu $
 
 require_once __DIR__.'/../../config.php';
 require_once __DIR__.'/../../lib/filelib.php';
@@ -84,9 +84,13 @@ echo $div_content = tag('div')->classes('content')->start();
 
 echo tag('h2')->classes('main')->append(get_string('editcoursewaremetadata', 'local_majhub'));
 
+$userlink = $OUTPUT->action_link(
+    new moodle_url('/user/profile.php', array('id' => $courseware->user->id)),
+    fullname($courseware->user)
+    );
 $fixedrows = array(
     get_string('title', 'local_majhub')       => $courseware->fullname,
-    get_string('contributor', 'local_majhub') => fullname($courseware->user),
+    get_string('contributor', 'local_majhub') => $userlink,
     get_string('uploadedat', 'local_majhub')  => userdate($courseware->timeuploaded),
     get_string('filesize', 'local_majhub')    => display_size($courseware->filesize),
 //  get_string('version', 'local_majhub')     => $courseware->version,
