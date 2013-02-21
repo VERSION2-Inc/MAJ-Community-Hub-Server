@@ -1,4 +1,4 @@
-<?php // $Id: pointsystem.php 180 2013-01-27 11:04:47Z malu $
+<?php // $Id: pointsystem.php 208 2013-02-04 00:39:45Z malu $
 
 require_once __DIR__.'/../../../config.php';
 
@@ -16,6 +16,7 @@ $form->add_int('pointsforreviewing', $pointsettings->pointsforreviewing);
 $form->add_int('pointsforquality', $pointsettings->pointsforquality);
 $form->add_int('pointsforpopularity', $pointsettings->pointsforpopularity);
 $form->add_int('countforpopularity', $pointsettings->countforpopularity);
+$form->add_int('lengthforreviewing', $pointsettings->lengthforreviewing);
 
 $form->add_heading('pointconsumptions');
 $form->add_int('pointsfordownloading', $pointsettings->pointsfordownloading);

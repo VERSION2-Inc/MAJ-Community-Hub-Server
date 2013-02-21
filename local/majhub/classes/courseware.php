@@ -3,7 +3,7 @@
  *  MAJ Hub
  *  
  *  @author  VERSION2, Inc. (http://ver2.jp)
- *  @version $Id: courseware.php 190 2013-01-28 12:00:02Z malu $
+ *  @version $Id: courseware.php 214 2013-02-21 09:30:58Z malu $
  */
 namespace majhub;
 
@@ -21,6 +21,7 @@ require_once __DIR__.'/review.php';
  *  @property-read int $number_of_reviews
  *  @property-read string $unique_fullname   The course full name with the unique id prefix
  *  @property-read string $unique_shortname  The course short name with the unique id prefix
+ *  @property-read boolean $missing          True if preview course has been deleted
  */
 class courseware
 {
@@ -56,6 +57,8 @@ class courseware
     public $timeuploaded;
     /** @var int|null */
     public $timerestored;
+    /** @var int|null */
+    public $timestarted;
     /** @var int|null */
     public $timeupdated;
 
@@ -119,6 +122,9 @@ class courseware
             return $this->_cache[$name] = self::generate_unique_name($this->id, $this->fullname);
         case 'unique_shortname':
             return $this->_cache[$name] = self::generate_unique_name($this->id, $this->shortname);
+        case 'missing':
+            return $this->_cache[$name] = $this->courseid
+                && !$DB->record_exists('course', array('id' => $this->courseid));
         }
         throw new \InvalidArgumentException();
     }
@@ -208,6 +214,7 @@ class courseware
         $courseware->timemodified = (int)$record->timemodified;
         $courseware->timeuploaded = isset($record->timeuploaded) ? (int)$record->timeuploaded : null;
         $courseware->timerestored = isset($record->timerestored) ? (int)$record->timerestored : null;
+        $courseware->timestarted  = isset($record->timestarted)  ? (int)$record->timestarted  : null;
         $courseware->timeupdated  = isset($record->timeupdated)  ? (int)$record->timeupdated  : null;
         return $courseware;
     }

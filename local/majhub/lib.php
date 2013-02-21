@@ -1,4 +1,4 @@
-<?php // $Id: lib.php 172 2012-12-11 08:58:26Z malu $
+<?php // $Id: lib.php 214 2013-02-21 09:30:58Z malu $
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -14,20 +14,20 @@ function local_majhub_cron()
     require_once __DIR__.'/classes/restore.php';
     require_once __DIR__.'/classes/courseware.php';
 
-    $role = $DB->get_record('role', array('archetype' => 'teacher'), '*', IGNORE_MULTIPLE);
+    $teacherrole = $DB->get_record('role', array('archetype' => 'teacher'), '*', IGNORE_MULTIPLE);
     $enroller = enrol_get_plugin('manual');
 
     // gets all uploaded, not restored and not restoring coursewares
     $coursewares = $DB->get_records_select(majhub\courseware::TABLE,
-        'fileid IS NOT NULL AND courseid IS NULL AND timemodified = timeuploaded',
+        'deleted = 0 AND fileid IS NOT NULL AND courseid IS NULL AND timestarted IS NULL',
         null, 'timeuploaded ASC');
     foreach ($coursewares as $courseware) try {
         // double check to prevent from being duplicated
         $courseware = majhub\courseware::from_id($courseware->id, MUST_EXIST);
-        if (!empty($courseware->courseid) || $courseware->timemodified != $courseware->timeuploaded)
+        if (!empty($courseware->courseid) || !empty($courseware->timestarted))
             continue;
         // marks as restoring
-        $DB->set_field(majhub\courseware::TABLE, 'timemodified', time(), array('id' => $courseware->id));
+        $DB->set_field(majhub\courseware::TABLE, 'timestarted', time(), array('id' => $courseware->id));
 
         // restores the uploaded course backup file as a new course
         $courseware->courseid = majhub\restore($courseware->id);
@@ -48,14 +48,14 @@ function local_majhub_cron()
 
         // assigns a capability for switching roles to non-editing teachers
         $context = context_course::instance($course->id);
-        assign_capability('moodle/role:switchroles', CAP_ALLOW, $role->id, $context->id);
+        assign_capability('moodle/role:switchroles', CAP_ALLOW, $teacherrole->id, $context->id);
 
         // enrols all the registered users to the new course as non-editing teachers
         $instanceid = $enroller->add_instance($course);
         $instance = $DB->get_record('enrol', array('id' => $instanceid), '*', MUST_EXIST);
         $users = get_users_confirmed();
         foreach ($users as $user) {
-            $enroller->enrol_user($instance, $user->id, $role->id);
+            $enroller->enrol_user($instance, $user->id, $teacherrole->id);
         }
         unset($users); // for memory saving
     } catch (Exception $ex) {
@@ -75,7 +75,7 @@ function local_majhub_user_created_handler($user)
 
     require_once __DIR__.'/classes/courseware.php';
 
-    $role = $DB->get_record('role', array('archetype' => 'teacher'), '*', IGNORE_MULTIPLE);
+    $teacherrole = $DB->get_record('role', array('archetype' => 'teacher'), '*', IGNORE_MULTIPLE);
     $enroller = enrol_get_plugin('manual');
 
     // enrols the new user to all the coursewares as a non-editing teacher
@@ -83,7 +83,7 @@ function local_majhub_user_created_handler($user)
     foreach ($coursewares as $courseware) try {
         $instance = $DB->get_record('enrol',
             array('enrol' => $enroller->get_name(), 'courseid' => $courseware->courseid), '*', MUST_EXIST);
-        $enroller->enrol_user($instance, $user->id, $role->id);
+        $enroller->enrol_user($instance, $user->id, $teacherrole->id);
     } catch (Exception $ex) {
         error_log($ex->__toString());
     }

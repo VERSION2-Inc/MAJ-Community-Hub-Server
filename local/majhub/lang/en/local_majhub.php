@@ -1,4 +1,4 @@
-<?php // $Id: local_majhub.php 194 2013-01-29 03:11:14Z malu $
+<?php // $Id: local_majhub.php 211 2013-02-07 01:38:15Z malu $
 
 $string['pluginname'] = 'MAJ Community Hub';
 
@@ -24,15 +24,6 @@ $string['preview'] = 'Preview';
 $string['download'] = 'Download';
 $string['demosite'] = 'Demo site';
 
-$string['review'] = 'Review';
-$string['rating'] = 'Rating';
-$string['moderator'] = 'Moderator';
-$string['overallrating'] = 'Overall';
-$string['latestreviews'] = 'Latest {$a->latest} of {$a->total} reviews';
-$string['youhavepoints'] = 'You have {$a} points';
-
-$string['give'] = 'Give';
-
 $string['sortby:newest'] = 'Newest';
 $string['sortby:oldest'] = 'Oldest';
 $string['sortby:title'] = 'Title';
@@ -51,6 +42,27 @@ $string['editcoursewaremetadata'] = 'Edit courseware metadata';
 
 $string['noresult'] = 'No result';
 
+$string['costspoints'] = 'Costs {$a} points';
+$string['youhavepoints'] = 'You have {$a} points';
+$string['howtogetpoints'] = 'How to get points';
+$string['howtogetpoints.desc'] = '<ul>
+<li>Upload more courses<br />
+    + {$a->pointsforuploading} per course upload</li>
+<li>Review more courses<br />
+    + {$a->pointsforreviewing} per review</li>
+<li>Request Bonus<br />
+    (= Send email to admin)</li>
+</ul>';
+
+$string['review'] = 'Review';
+$string['rating'] = 'Rating';
+$string['moderator'] = 'Moderator';
+$string['overallrating'] = 'Overall';
+$string['latestreviews'] = 'Latest {$a->latest} of {$a->total} reviews';
+$string['reviewinletters'] = 'Review in {$a} letters or more to get points';
+
+$string['give'] = 'Give';
+
 $string['settings/frontpage'] = 'Front page settings';
 $string['settings/metafields'] = 'Meta field definitions';
 $string['settings/pointsystem'] = 'Point system settings';
@@ -64,7 +76,8 @@ $string['pointsforuploading'] = 'Points for uploading';
 $string['pointsforreviewing'] = 'Points for reviewing';
 $string['pointsforquality'] = 'Quality bonus points';
 $string['pointsforpopularity'] = 'Popularity bonus points';
-$string['countforpopularity'] = 'Number of downloads for popularity bonus acquisition';
+$string['countforpopularity'] = 'Number of downloads to get popularity bonus';
+$string['lengthforreviewing'] = 'Minimum comment length to get reviewing points';
 
 $string['pointconsumptions'] = 'Point consumptions';
 $string['pointsfordownloading'] = 'Downloading cost';
@@ -78,7 +91,7 @@ $string['attributes:required'] = 'Required';
 $string['attributes:optional'] = 'Optional';
 $string['options'] = 'Options';
 
-$string['confirm:purchase'] = 'Do you want to pay {$a} points for downloading this courseware?';
+$string['confirm:payfordownload'] = 'Do you want to pay {$a} points for downloading this courseware?';
 
 $string['confirm:metafield:delete'] = 'Are you sure you really want to delete this meta field?';
 $string['confirm:metafield:delete:warning'] = 'WARNING !!
@@ -88,11 +101,9 @@ They will never be recovered even if you redefine a same-name meta field.';
 $string['error:accessdenied'] = 'Access denied
 (If you have multiple accounts on this Hub server, log in as the account you entered in your Hub Client.)';
 $string['error:missingcourseware'] = 'Courseware #{$a} is missing';
-$string['error:shortofpointsfordownloading'] = 'Short of points for downloading';
+$string['error:youdonthaveenoughpoints'] = 'Sorry, you don\'t have enough points.';
 
 $string['error:metafield:emptyname'] = 'Name cannot be empty';
 $stirng['error:metafield:emptyoptions'] = 'Options cannot be empty if type is not Text';
 $string['error:metafield:duplicatename'] = 'Name is already in use';
 $string['error:metafield:duplicateoption'] = 'Duplicate option cannot be set';
-
-$string['visitlater'] = 'The preview course will be ready in a few minutes, please visit later.';

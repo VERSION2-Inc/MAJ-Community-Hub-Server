@@ -2,7 +2,7 @@
  *  MAJ Hub block
  *  
  *  @author  VERSION2, Inc. (http://ver2.jp)
- *  @version $Id: module.js 166 2012-12-05 05:54:33Z malu $
+ *  @version $Id: module.js 212 2013-02-07 01:38:19Z malu $
  */
 YUI.add('block_majhub', function (Y)
 {
@@ -79,6 +79,17 @@ YUI.add('block_majhub', function (Y)
         }
 
         /**
+         *  Collapse tree blocks (block_navigation, block_settings)
+         */
+        function collapse_tree_blocks()
+        {
+            // My courses
+            Y.Node.all('.block_navigation li.depth_2').addClass('collapsed');
+            // Course administration
+            Y.Node.all('.block_settings li.contains_branch').addClass('collapsed');
+        }
+
+        /**
          *  Initializes the MAJ Hub block
          *  
          *  @param {YUI} Y
@@ -87,12 +98,12 @@ YUI.add('block_majhub', function (Y)
         {
             init_required_fields();
             init_optional_fields();
+            collapse_tree_blocks();
 
-            if (/editmetadata=1/.exec(location.search)) {
-                $block.one('.metadata input').focus();
-            } else if (/editreview=1/.exec(location.search)) {
-                $block.one('.reviews textarea').focus();
+            var $reviewcomment = $block.one('.reviews textarea');
+            if ($reviewcomment) {
+                $reviewcomment.focus();
             }
         }
     }
-}, '2.3, release candidate 1', { requires: [ 'base', 'node', 'io', 'dom' ] });
+}, '2.3, release 2 patch 3', { requires: [ 'base', 'node', 'io', 'dom' ] });

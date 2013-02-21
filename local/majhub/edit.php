@@ -1,4 +1,4 @@
-<?php // $Id: edit.php 202 2013-01-30 09:18:03Z malu $
+<?php // $Id: edit.php 214 2013-02-21 09:30:58Z malu $
 
 require_once __DIR__.'/../../config.php';
 require_once __DIR__.'/../../lib/filelib.php';
@@ -17,7 +17,7 @@ if (false) {
 $id = required_param('id', PARAM_INT);
 
 $courseware = majhub\courseware::from_id($id);
-if (!$courseware) {
+if (!$courseware || $courseware->deleted || $courseware->missing) {
     if (isset($_SERVER['HTTP_REFERER'])) {
         redirect($_SERVER['HTTP_REFERER'] . "#missingcourseware={$id}");
     }
@@ -59,7 +59,7 @@ if (optional_param('updatemetadata', null, PARAM_TEXT)) {
     }
     if (empty($invalidfields)) {
         $courseware->update();
-        redirect($courseurl ?: $PAGE->url);
+        redirect($courseurl ?: new moodle_url($PAGE->url, array('updated' => true)));
     }
 }
 
@@ -83,6 +83,10 @@ echo $li_section = tag('li')->classes('section', 'main', 'clearfix')->start();
 echo $div_content = tag('div')->classes('content')->start();
 
 echo tag('h2')->classes('main')->append(get_string('editcoursewaremetadata', 'local_majhub'));
+
+if (optional_param('updated', null, PARAM_TEXT)) {
+    echo tag('div')->classes('message')->append(get_string('changessaved'));
+}
 
 $userlink = $OUTPUT->action_link(
     new moodle_url('/user/profile.php', array('id' => $courseware->user->id)),

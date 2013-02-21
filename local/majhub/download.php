@@ -1,4 +1,4 @@
-<?php // $Id: download.php 182 2013-01-28 08:30:53Z malu $
+<?php // $Id: download.php 205 2013-02-01 07:50:32Z malu $
 
 require_once __DIR__.'/../../config.php';
 require_once __DIR__.'/../../lib/filelib.php';
@@ -25,7 +25,7 @@ if (!$DB->record_exists('majhub_courseware_downloads',
     array('userid' => $USER->id, 'coursewareid' => $courseware->id)))
 {
     if (majhub\point::from_userid($USER->id)->total < majhub\point::get_settings()->pointsfordownloading)
-        throw new majhub\exception('shortofpointsfordownloading');
+        throw new majhub\exception('youdonthaveenoughpoints');
 
     $record = new stdClass;
     $record->userid       = $USER->id;

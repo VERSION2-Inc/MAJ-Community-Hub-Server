@@ -3,7 +3,7 @@
  *  MAJ Hub
  *  
  *  @author  VERSION2, Inc. (http://ver2.jp)
- *  @version $Id: point.php 184 2013-01-28 08:35:01Z malu $
+ *  @version $Id: point.php 208 2013-02-04 00:39:45Z malu $
  */
 namespace majhub;
 
@@ -128,6 +128,8 @@ class pointsettings
     public $pointsforpopularity   = 20;
     /** @var int */
     public $countforpopularity    = 10;
+    /** @var int */
+    public $lengthforreviewing    = 100;
     /** @var int */
     public $pointsfordownloading  = 10;
 }

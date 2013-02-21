@@ -1,4 +1,4 @@
-<?php // $Id: upgrade.php 199 2013-01-29 04:53:42Z malu $
+<?php // $Id: upgrade.php 214 2013-02-21 09:30:58Z malu $
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -77,6 +77,20 @@ function xmldb_local_majhub_upgrade($oldversion = 0)
             majhub\setting::set('coursewaresperpageoptions', '5, 10, 50, 100');
         if (majhub\setting::get('coursewaresperpagedefault') === null)
             majhub\setting::set('coursewaresperpagedefault', '10');
+    }
+
+    if ($oldversion < 2013020102) {
+        require_once __DIR__.'/../classes/setting.php';
+        if (majhub\setting::get('lengthforreviewing') === null)
+            majhub\setting::set('lengthforreviewing', 100);
+    }
+
+    if ($oldversion < 2013022101) {
+        $table = new xmldb_table('majhub_coursewares');
+        $field = new xmldb_field('timestarted', XMLDB_TYPE_INTEGER, 10, XMLDB_UNSIGNED, null, null, null, 'timerestored');
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
     }
 
     return true;

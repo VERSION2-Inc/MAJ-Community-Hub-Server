@@ -6,7 +6,7 @@ require_once __DIR__.'/classes/candidate.php';
  *  MAJ Hub Voting block
  *  
  *  @author  VERSION2, Inc. (http://ver2.jp)
- *  @version $Id: block_majhub_voting.php 148 2012-12-01 08:37:33Z malu $
+ *  @version $Id: block_majhub_voting.php 216 2013-02-21 09:37:35Z malu $
  */
 class block_majhub_voting extends block_base
 {
@@ -18,7 +18,7 @@ class block_majhub_voting extends block_base
 
     public function applicable_formats()
     {
-        return array('course' => true);
+        return array('course' => true, 'course-category' => false);
     }
 
     /**
