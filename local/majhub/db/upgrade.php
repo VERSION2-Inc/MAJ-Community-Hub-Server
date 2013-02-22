@@ -1,4 +1,4 @@
-<?php // $Id: upgrade.php 214 2013-02-21 09:30:58Z malu $
+<?php // $Id: upgrade.php 220 2013-02-22 03:00:22Z malu $
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -91,6 +91,11 @@ function xmldb_local_majhub_upgrade($oldversion = 0)
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
+    }
+
+    if ($oldversion < 2013022102) {
+        $DB->execute('UPDATE {majhub_coursewares} SET timestarted = timeuploaded
+                      WHERE courseid IS NOT NULL AND timestarted IS NULL');
     }
 
     return true;

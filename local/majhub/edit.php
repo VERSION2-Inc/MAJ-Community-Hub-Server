@@ -1,4 +1,4 @@
-<?php // $Id: edit.php 214 2013-02-21 09:30:58Z malu $
+<?php // $Id: edit.php 217 2013-02-21 11:10:47Z malu $
 
 require_once __DIR__.'/../../config.php';
 require_once __DIR__.'/../../lib/filelib.php';
@@ -9,6 +9,7 @@ require_once __DIR__.'/classes/element.php';
 function tag($tagName) { return new majhub\element($tagName); }
 
 if (false) {
+    $CFG    = new stdClass;
     $USER   = new stdClass;
     $OUTPUT = new core_renderer;
     $PAGE   = new moodle_page;
@@ -19,7 +20,10 @@ $id = required_param('id', PARAM_INT);
 $courseware = majhub\courseware::from_id($id);
 if (!$courseware || $courseware->deleted || $courseware->missing) {
     if (isset($_SERVER['HTTP_REFERER'])) {
-        redirect($_SERVER['HTTP_REFERER'] . "#missingcourseware={$id}");
+        // check if wwwroot is different to avoid redirection loop
+        if (substr_compare($_SERVER['HTTP_REFERER'], $CFG->wwwroot, 0, strlen($CFG->wwwroot), true) != 0) {
+            redirect($_SERVER['HTTP_REFERER'] . "#missingcourseware={$id}");
+        }
     }
     print_error('error:missingcourseware', 'local_majhub', null, $id);
 }

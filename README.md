@@ -1,12 +1,14 @@
 MAJ Community Hub Server
 ========================
 
-version 2.3, release 2 patch 3 - 2013.02.21
+version 2.3, release 2 patch 4 - 2013.02.22
 
 
 Change Log
 ----------
 
+* 2.3, release 2 patch 4
+  * Improvement: Added mtrace for cron job
 * 2.3, release 2 patch 3
   * Bug Fix: Preview course won't be created if its metadata is edited prior to cron job
   * Improvement: Added restriction for Review comment length

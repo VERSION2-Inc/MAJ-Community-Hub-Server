@@ -1,4 +1,4 @@
-<?php // $Id: lib.php 214 2013-02-21 09:30:58Z malu $
+<?php // $Id: lib.php 220 2013-02-22 03:00:22Z malu $
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -29,35 +29,46 @@ function local_majhub_cron()
         // marks as restoring
         $DB->set_field(majhub\courseware::TABLE, 'timestarted', time(), array('id' => $courseware->id));
 
-        // restores the uploaded course backup file as a new course
-        $courseware->courseid = majhub\restore($courseware->id);
-        $course = $DB->get_record('course', array('id' => $courseware->courseid), '*', MUST_EXIST);
+        mtrace("  Courseware ID: {$courseware->id}");
 
-        // renames the course fullname and shortname with the courseware unique id
-        $course->fullname  = $courseware->unique_fullname;
-        $course->shortname = $courseware->unique_shortname;
-        $DB->update_record('course', $course);
+        mtrace('    Creating a preview course', '...');
+        {
+            // restores the uploaded course backup file as a new course
+            $courseware->courseid = majhub\restore($courseware->id);
+            $course = $DB->get_record('course', array('id' => $courseware->courseid), '*', MUST_EXIST);
 
-        // adds a MAJ Hub block to the new course
-        $page = new moodle_page();
-        $page->set_course($course);
-        $page->set_pagelayout('course');
-        $page->set_pagetype('course-view-' . $course->format);
-        $page->blocks->load_blocks();
-        $page->blocks->add_block_at_end_of_default_region('majhub');
+            // renames the course fullname and shortname with the courseware unique id
+            $course->fullname  = $courseware->unique_fullname;
+            $course->shortname = $courseware->unique_shortname;
+            $DB->update_record('course', $course);
 
-        // assigns a capability for switching roles to non-editing teachers
-        $context = context_course::instance($course->id);
-        assign_capability('moodle/role:switchroles', CAP_ALLOW, $teacherrole->id, $context->id);
-
-        // enrols all the registered users to the new course as non-editing teachers
-        $instanceid = $enroller->add_instance($course);
-        $instance = $DB->get_record('enrol', array('id' => $instanceid), '*', MUST_EXIST);
-        $users = get_users_confirmed();
-        foreach ($users as $user) {
-            $enroller->enrol_user($instance, $user->id, $teacherrole->id);
+            // adds a MAJ Hub block to the new course
+            $page = new moodle_page();
+            $page->set_course($course);
+            $page->set_pagelayout('course');
+            $page->set_pagetype('course-view-' . $course->format);
+            $page->blocks->load_blocks();
+            $page->blocks->add_block_at_end_of_default_region('majhub');
         }
-        unset($users); // for memory saving
+        mtrace("done. (courseid: {$courseware->courseid})");
+
+        mtrace('    Assigning a teacher capability for all registered users', '...');
+        {
+            // assigns a capability for switching roles to non-editing teachers
+            $context = context_course::instance($course->id);
+            assign_capability('moodle/role:switchroles', CAP_ALLOW, $teacherrole->id, $context->id);
+
+            // enrols all the registered users to the new course as non-editing teachers
+            $instanceid = $enroller->add_instance($course);
+            $instance = $DB->get_record('enrol', array('id' => $instanceid), '*', MUST_EXIST);
+            $users = get_users_confirmed();
+            foreach ($users as $user) {
+                $enroller->enrol_user($instance, $user->id, $teacherrole->id);
+            }
+            unset($users); // for memory saving
+        }
+        mtrace('done.');
+
     } catch (Exception $ex) {
         error_log($ex->__toString());
     }

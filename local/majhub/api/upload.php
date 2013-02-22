@@ -1,8 +1,12 @@
-<?php // $Id: upload.php 172 2012-12-11 08:58:26Z malu $
+<?php // $Id: upload.php 217 2013-02-21 11:10:47Z malu $
 
 require_once __DIR__.'/../../../config.php';
 require_once __DIR__.'/../classes/utils.php';
 require_once __DIR__.'/../classes/storage.php';
+
+if (false) {
+    $DB = new mysqli_native_moodle_database;
+}
 
 try {
     require_login(null, false, null, false, true);
