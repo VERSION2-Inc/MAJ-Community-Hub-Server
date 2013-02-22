@@ -1,4 +1,4 @@
-<?php // $Id: lib.php 220 2013-02-22 03:00:22Z malu $
+<?php // $Id: lib.php 222 2013-02-22 03:52:44Z malu $
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -36,6 +36,12 @@ function local_majhub_cron()
             // restores the uploaded course backup file as a new course
             $courseware->courseid = majhub\restore($courseware->id);
             $course = $DB->get_record('course', array('id' => $courseware->courseid), '*', MUST_EXIST);
+
+            // deletes old coursewares having same courseid
+            $DB->execute(
+                'UPDATE {majhub_coursewares} SET deleted = 1 WHERE courseid = :courseid AND id <> :coursewareid',
+                array('courseid' => $courseware->courseid, 'coursewareid' => $courseware->id)
+                );
 
             // renames the course fullname and shortname with the courseware unique id
             $course->fullname  = $courseware->unique_fullname;

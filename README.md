@@ -1,12 +1,14 @@
 MAJ Community Hub Server
 ========================
 
-version 2.3, release 2 patch 4 - 2013.02.22
+version 2.3, release 2 patch 5 - 2013.02.22
 
 
 Change Log
 ----------
 
+* 2.3, release 2 patch 5
+  * Bug Fix: Deletes orphaned coursewares
 * 2.3, release 2 patch 4
   * Improvement: Added mtrace for cron job
 * 2.3, release 2 patch 3

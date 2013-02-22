@@ -1,4 +1,4 @@
-<?php // $Id: searchresults.php 202 2013-01-30 09:18:03Z malu $
+<?php // $Id: searchresults.php 222 2013-02-22 03:52:44Z malu $
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -88,7 +88,7 @@ if ($defaultlimit > 0) {
         $sql .= " LEFT JOIN {majhub_courseware_metadata} m{$metafield->id}
                          ON m{$metafield->id}.coursewareid = cw.id AND m{$metafield->id}.metafieldid = $metafield->id";
     }
-    $sql .= ' WHERE ' . $criterion->expression;
+    $sql .= ' WHERE cw.deleted = 0 AND ' . $criterion->expression;
     $sql .= ' GROUP BY cw.id, cw.fullname, cw.courseid, cw.demourl, cw.timeuploaded, u.firstname, u.lastname';
     $orderby = 'timeuploaded DESC';
     switch ($sortby) {

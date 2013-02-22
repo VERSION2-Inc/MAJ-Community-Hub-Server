@@ -1,4 +1,4 @@
-<?php // $Id: upgrade.php 220 2013-02-22 03:00:22Z malu $
+<?php // $Id: upgrade.php 222 2013-02-22 03:52:44Z malu $
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -96,6 +96,22 @@ function xmldb_local_majhub_upgrade($oldversion = 0)
     if ($oldversion < 2013022102) {
         $DB->execute('UPDATE {majhub_coursewares} SET timestarted = timeuploaded
                       WHERE courseid IS NOT NULL AND timestarted IS NULL');
+    }
+
+    if ($oldversion < 2013022104) {
+        // deletes old coursewares having same courseid
+        $duplicates = $DB->get_records_sql('SELECT courseid FROM {majhub_coursewares}
+                                            WHERE deleted = 0 AND courseid IS NOT NULL
+                                            GROUP BY courseid HAVING COUNT(*) > 1');
+        foreach ($duplicates as $dup) {
+            $latest = $DB->get_records('majhub_coursewares',
+                array('courseid' => $dup->courseid, 'deleted' => 0), 'timerestored DESC', 'id', 0, 1);
+            $latest = reset($latest);
+            $DB->execute(
+                'UPDATE {majhub_coursewares} SET deleted = 1 WHERE courseid = :courseid AND id <> :coursewareid',
+                array('courseid' => $dup->courseid, 'coursewareid' => $latest->id)
+                );
+        }
     }
 
     return true;

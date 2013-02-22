@@ -3,7 +3,7 @@
  *  MAJ Hub
  *  
  *  @author  VERSION2, Inc. (http://ver2.jp)
- *  @version $Id: courseware.php 214 2013-02-21 09:30:58Z malu $
+ *  @version $Id: courseware.php 222 2013-02-22 03:52:44Z malu $
  */
 namespace majhub;
 
@@ -247,7 +247,7 @@ class courseware
     {
         global $DB;
 
-        $record = $DB->get_record(self::TABLE, array('courseid' => $courseid), '*', $strictness);
+        $record = $DB->get_record(self::TABLE, array('courseid' => $courseid, 'deleted' => 0), '*', $strictness);
         return $record ? self::from_record($record) : null;
     }
 

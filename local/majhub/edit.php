@@ -1,4 +1,4 @@
-<?php // $Id: edit.php 217 2013-02-21 11:10:47Z malu $
+<?php // $Id: edit.php 222 2013-02-22 03:52:44Z malu $
 
 require_once __DIR__.'/../../config.php';
 require_once __DIR__.'/../../lib/filelib.php';
@@ -9,6 +9,7 @@ require_once __DIR__.'/classes/element.php';
 function tag($tagName) { return new majhub\element($tagName); }
 
 if (false) {
+    $DB     = new mysqli_native_moodle_database;
     $CFG    = new stdClass;
     $USER   = new stdClass;
     $OUTPUT = new core_renderer;
@@ -19,6 +20,10 @@ $id = required_param('id', PARAM_INT);
 
 $courseware = majhub\courseware::from_id($id);
 if (!$courseware || $courseware->deleted || $courseware->missing) {
+    if ($courseware && $courseware->missing) {
+        // deletes a missing courseware (TODO: listen course deletion and do this immediately)
+        $DB->set_field('majhub_coursewares', 'deleted', 1, array('id' => $courseware->id));
+    }
     if (isset($_SERVER['HTTP_REFERER'])) {
         // check if wwwroot is different to avoid redirection loop
         if (substr_compare($_SERVER['HTTP_REFERER'], $CFG->wwwroot, 0, strlen($CFG->wwwroot), true) != 0) {
