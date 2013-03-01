@@ -1,14 +1,13 @@
 <?php
 
 require_once __DIR__.'/../../local/majhub/classes/courseware.php';
-require_once __DIR__.'/../../local/majhub/classes/capability.php';
 require_once __DIR__.'/../../local/majhub/classes/point.php';
 
 /**
  *  MAJ Hub My Points block
  *  
  *  @author  VERSION2, Inc. (http://ver2.jp)
- *  @version $Id: block_majhub_points.php 228 2013-03-01 06:17:08Z malu $
+ *  @version $Id: block_majhub_points.php 229 2013-03-01 06:24:21Z malu $
  */
 class block_majhub_points extends block_base
 {

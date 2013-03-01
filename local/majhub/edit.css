@@ -1,4 +1,5 @@
 div.message { background-color:white; padding:0.5em 1em; margin:1em 0; }
+div.message img.smallicon { margin:-2px 2px -4px 1em; }
 table.metadata { /*background-color:white;*/ }
 table.metadata tr { color:black; }
 table.metadata tr.required { color:firebrick; }

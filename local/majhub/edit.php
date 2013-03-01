@@ -1,4 +1,4 @@
-<?php // $Id: edit.php 222 2013-02-22 03:52:44Z malu $
+<?php // $Id: edit.php 230 2013-03-01 08:48:24Z malu $
 
 require_once __DIR__.'/../../config.php';
 require_once __DIR__.'/../../lib/filelib.php';
@@ -94,7 +94,13 @@ echo $div_content = tag('div')->classes('content')->start();
 echo tag('h2')->classes('main')->append(get_string('editcoursewaremetadata', 'local_majhub'));
 
 if (optional_param('updated', null, PARAM_TEXT)) {
-    echo tag('div')->classes('message')->append(get_string('changessaved'));
+    echo $div_message = tag('div')->classes('message')->start();
+    echo get_string('changessaved');
+    if (!$courseware->courseid) {
+        echo $OUTPUT->pix_icon('i/scheduled', '');
+        echo tag('span')->append(get_string('previewcourseisnotready', 'local_majhub'));
+    }
+    echo $div_message->end();
 }
 
 $userlink = $OUTPUT->action_link(

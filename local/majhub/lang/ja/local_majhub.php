@@ -1,4 +1,4 @@
-<?php // $Id: local_majhub.php 211 2013-02-07 01:38:15Z malu $
+<?php // $Id: local_majhub.php 230 2013-03-01 08:48:24Z malu $
 
 $string['pluginname'] = 'MAJ Community Hub';
 
@@ -39,6 +39,7 @@ $string['previewthiscourseware'] = 'このコースウェアをプレビュー';
 $string['downloadthiscourseware'] = 'このコースウェアをダウンロード';
 $string['visitauthorsdemosite'] = '作者のデモサイトを訪れる';
 $string['editcoursewaremetadata'] = 'コースウェアのメタデータを編集する';
+$string['previewcourseisnotready'] = 'プレビューコースの生成には10分以上かかることがあります。後ほどこのページを訪れてください。';
 
 $string['noresult'] = '条件にマッチするコースウェアがありません';
 

@@ -1,4 +1,4 @@
-<?php // $Id: local_majhub.php 211 2013-02-07 01:38:15Z malu $
+<?php // $Id: local_majhub.php 230 2013-03-01 08:48:24Z malu $
 
 $string['pluginname'] = 'MAJ Community Hub';
 
@@ -39,6 +39,7 @@ $string['previewthiscourseware'] = 'Preview this courseware';
 $string['downloadthiscourseware'] = 'Download this courseware';
 $string['visitauthorsdemosite'] = 'Visit author\'s demo site';
 $string['editcoursewaremetadata'] = 'Edit courseware metadata';
+$string['previewcourseisnotready'] = 'Generating Preview Course may take more then 10 minutes. Please visit later.';
 
 $string['noresult'] = 'No result';
 
