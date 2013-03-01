@@ -1,12 +1,14 @@
 MAJ Community Hub Server
 ========================
 
-version 2.3, release 2 patch 5 - 2013.02.22
+version 2.3, release 3 - 2013.03.01
 
 
 Change Log
 ----------
 
+* 2.3, release 3
+  * New Feature: My Points block
 * 2.3, release 2 patch 5
   * Bug Fix: Deletes orphaned coursewares
 * 2.3, release 2 patch 4
@@ -20,7 +22,7 @@ Change Log
 * 2.3, release 2 patch 1
   * Improvement: Site admin is also able to edit metadata
 * 2.3, release 2
-  * New feature: Point System
+  * New Feature: Point System
   * Improvement: Review
   * Improvement: Metadata Form
 

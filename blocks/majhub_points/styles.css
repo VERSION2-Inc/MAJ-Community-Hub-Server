@@ -1,0 +1,13 @@
+/**
+ *  MAJ Hub My Points block
+ *  
+ *  @author  VERSION2, Inc. (http://ver2.jp)
+ *  @version $Id: styles.css 228 2013-03-01 06:17:08Z malu $
+ */
+.block_majhub_points table.points { margin:0; width:100%; }
+.block_majhub_points table.points th { padding:0.2em 2px; vertical-align:middle; text-align:left; font-weight:normal; }
+.block_majhub_points table.points td { padding:0.2em 2px; vertical-align:middle; text-align:right; }
+.block_majhub_points table.points th.plus { background-color:palegreen; }
+.block_majhub_points table.points th.minus { background-color:lightpink; }
+.block_majhub_points table.points tr.total { border-top:1px solid gray; }
+.block_majhub_points table.points tr.total * { font-weight:bold; }

@@ -1,4 +1,4 @@
-<?php // $Id: upgrade.php 222 2013-02-22 03:52:44Z malu $
+<?php // $Id: upgrade.php 227 2013-03-01 06:17:01Z malu $
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -111,6 +111,21 @@ function xmldb_local_majhub_upgrade($oldversion = 0)
                 'UPDATE {majhub_coursewares} SET deleted = 1 WHERE courseid = :courseid AND id <> :coursewareid',
                 array('courseid' => $dup->courseid, 'coursewareid' => $latest->id)
                 );
+        }
+    }
+
+    if ($oldversion < 2013030102) {
+        $courses = $DB->get_records_sql(
+            'SELECT DISTINCT c.* FROM {course} c JOIN {majhub_coursewares} cw ON cw.courseid = c.id');
+        foreach ($courses as $course) {
+            $page = new moodle_page();
+            $page->set_course($course);
+            $page->set_pagelayout('course');
+            $page->set_pagetype('course-view-' . $course->format);
+            $page->blocks->load_blocks();
+            if (!$page->blocks->is_block_present('majhub_points')) {
+                $page->blocks->add_block('majhub_points', BLOCK_POS_LEFT, -1, false);
+            }
         }
     }
 

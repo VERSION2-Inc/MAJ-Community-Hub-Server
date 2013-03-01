@@ -1,4 +1,4 @@
-<?php // $Id: lib.php 222 2013-02-22 03:52:44Z malu $
+<?php // $Id: lib.php 227 2013-03-01 06:17:01Z malu $
 
 defined('MOODLE_INTERNAL') || die;
 
@@ -55,6 +55,7 @@ function local_majhub_cron()
             $page->set_pagetype('course-view-' . $course->format);
             $page->blocks->load_blocks();
             $page->blocks->add_block_at_end_of_default_region('majhub');
+            $page->blocks->add_block('majhub_points', BLOCK_POS_LEFT, -1, false);
         }
         mtrace("done. (courseid: {$courseware->courseid})");
 

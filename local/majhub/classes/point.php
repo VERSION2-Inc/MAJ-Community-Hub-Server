@@ -3,7 +3,7 @@
  *  MAJ Hub
  *  
  *  @author  VERSION2, Inc. (http://ver2.jp)
- *  @version $Id: point.php 208 2013-02-04 00:39:45Z malu $
+ *  @version $Id: point.php 227 2013-03-01 06:17:01Z malu $
  */
 namespace majhub;
 
@@ -13,6 +13,12 @@ require_once __DIR__.'/courseware.php';
 /**
  *  Point
  *  
+ *  @property-read int $registration
+ *  @property-read int $upload
+ *  @property-read int $review
+ *  @property-read int $popularity
+ *  @property-read int $quality
+ *  @property-read int $download
  *  @property-read int $total
  */
 class point
@@ -46,37 +52,49 @@ class point
             return $this->_cache[$name];
 
         switch ($name) {
-        case 'total':
-            $uploadingcount = $DB->count_records(courseware::TABLE, array('userid' => $this->userid, 'deleted' => 0));
-            $reviewingcount = $DB->count_records(review::TABLE, array('userid' => $this->userid));
-            $popularitycount = $DB->count_records_sql(
-                'SELECT COUNT(d.id) FROM {majhub_courseware_downloads} d
-                 JOIN {' . courseware::TABLE . '} c ON c.id = d.coursewareid
-                 WHERE c.userid = :userid AND d.userid <> c.userid',
+        case 'registration':
+            return $this->_cache[$name] = self::get_settings()->pointsforregistration;
+        case 'upload':
+            $uploadingcount = $DB->count_records_sql(
+                'SELECT COUNT(cw.id) FROM {' . courseware::TABLE . '} cw
+                 WHERE cw.userid = :userid AND cw.courseid IS NOT NULL AND cw.deleted = 0',
                 array('userid' => $this->userid)
                 );
+            return $this->_cache[$name] = self::get_settings()->pointsforuploading * $uploadingcount;
+        case 'review':
+            $reviewingcount = $DB->count_records(review::TABLE, array('userid' => $this->userid));
+            return $this->_cache[$name] = self::get_settings()->pointsforreviewing * $reviewingcount;
+        case 'popularity':
+            $popularcoursewares = $DB->get_records_sql(
+                'SELECT cw.id, COUNT(d.id) FROM {' . courseware::TABLE . '} cw
+                 JOIN {majhub_courseware_downloads} d ON d.coursewareid = cw.id
+                 WHERE cw.userid = :userid AND d.userid <> cw.userid
+                 GROUP BY cw.id HAVING COUNT(d.id) >= :countforpopularity',
+                array('userid' => $this->userid, 'countforpopularity' => self::get_settings()->countforpopularity)
+                );
+            return $this->_cache[$name] = self::get_settings()->pointsforpopularity * count($popularcoursewares);
+        case 'quality':
+            return $this->_cache[$name] = $DB->count_records_sql(
+                'SELECT SUM(b.points) FROM {majhub_bonus_points} b
+                 JOIN {' . courseware::TABLE . '} cw ON cw.id = b.coursewareid
+                 WHERE cw.userid = :userid AND b.reason = :reason',
+                array('userid' => $this->userid, 'reason' => 'quality')
+                );
+        case 'download':
             $downloadingcount = $DB->count_records_sql(
                 'SELECT COUNT(d.id) FROM {majhub_courseware_downloads} d
-                 JOIN {' . courseware::TABLE . '} c ON c.id = d.coursewareid
-                 WHERE d.userid = :userid AND c.userid <> d.userid',
+                 JOIN {' . courseware::TABLE . '} cw ON cw.id = d.coursewareid
+                 WHERE d.userid = :userid AND cw.userid <> d.userid',
                 array('userid' => $this->userid)
                 );
-            $bonuspoints = $DB->count_records_sql(
-                'SELECT SUM(b.points) FROM {majhub_bonus_points} b
-                 JOIN {' . courseware::TABLE . '} c ON c.id = b.coursewareid
-                 WHERE c.userid = :userid',
-                array('userid' => $this->userid)
-                );
-            $settings = self::get_settings();
-            $total  = $settings->pointsforregistration;
-            $total += $settings->pointsforuploading * $uploadingcount;
-            $total += $settings->pointsforreviewing * $reviewingcount;
-            if ($popularitycount >= $settings->countforpopularity) {
-                $total += $settings->pointsforpopularity;
-            }
-            $total += $bonuspoints;
-            $total -= $settings->pointsfordownloading * $downloadingcount;
-            return $this->_cache[$name] = $total;
+            return $this->_cache[$name] = self::get_settings()->pointsfordownloading * $downloadingcount;
+        case 'total':
+            return $this->registration
+                 + $this->upload
+                 + $this->review
+                 + $this->popularity
+                 + $this->quality
+                 - $this->download;
         }
         throw new \InvalidArgumentException();
     }
