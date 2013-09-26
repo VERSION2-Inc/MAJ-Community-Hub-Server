@@ -131,7 +131,7 @@
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="majhub_review_proscons" COMMENT="Courseware review pros and cons" PREVIOUS="majhub_settings">
+    <TABLE NAME="majhub_review_proscons" COMMENT="Courseware review pros and cons" PREVIOUS="majhub_bonus_points">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="userid"/>
         <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="false" PREVIOUS="id" NEXT="reviewid"/>
